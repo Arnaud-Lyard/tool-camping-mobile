@@ -24,26 +24,26 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.content}>
-        <Text variant="headlineMedium">{t('parametres.title')}</Text>
+        <Text variant="headlineMedium">{t('settings.title')}</Text>
 
         {user ? (
           <Text variant="bodyMedium">
-            {t('parametres.loggedInAs', { email: user.email })}
+            {t('settings.loggedInAs', { email: user.email })}
           </Text>
         ) : null}
 
-        <Text variant="labelLarge">{t('parametres.language')}</Text>
+        <Text variant="labelLarge">{t('settings.language')}</Text>
         <SegmentedButtons
           value={language}
           onValueChange={onChange}
           buttons={[
-            { value: 'fr', label: t('parametres.french') },
-            { value: 'en', label: t('parametres.english') },
+            { value: 'fr', label: t('settings.french') },
+            { value: 'en', label: t('settings.english') },
           ]}
         />
 
         <Button mode="contained-tonal" onPress={signOut} style={styles.logout}>
-          {t('parametres.logout')}
+          {t('settings.logout')}
         </Button>
       </View>
     </SafeAreaView>

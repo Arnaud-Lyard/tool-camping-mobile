@@ -1,9 +1,9 @@
 {
   "tabs": {
-    "equipements": "Equipment",
-    "outils": "Tools",
-    "entretien": "Maintenance",
-    "parametres": "Settings"
+    "equipment": "Equipment",
+    "tools": "Tools",
+    "maintenance": "Maintenance",
+    "settings": "Settings"
   },
   "login": {
     "title": "Sign in",
@@ -99,12 +99,15 @@
       "cta": "New equipment"
     }
   },
-  "outils": {
+  "tools": {
     "title": "Tools",
-    "boussole": "Compass",
-    "niveau": "Level",
-    "boussolePlaceholder": "Compass coming soon",
-    "niveauPlaceholder": "Level coming soon"
+    "compass": "Compass",
+    "compassPlaceholder": "Compass coming soon",
+    "spiritLevel": "Level",
+    "spiritLevelInstruction": "Place the phone flat on the surface to check.",
+    "spiritLevelUnavailable": "Accelerometer sensor unavailable on this device.",
+    "spiritLevelAxisX": "Left–Right",
+    "spiritLevelAxisY": "Front–Back"
   },
   "battery": {
     "title": "Battery reminder",
@@ -119,7 +122,7 @@
     "saved": "Your reminder preferences have been saved.",
     "loadError": "Failed to load"
   },
-  "parametres": {
+  "settings": {
     "title": "Settings",
     "language": "Language",
     "french": "Français",

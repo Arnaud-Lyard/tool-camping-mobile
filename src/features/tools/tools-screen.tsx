@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
-import { Appbar, List, Text } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
+import { Appbar, List, Text } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-type Tool = 'boussole' | 'niveau';
+import SpiritLevelScreen from "./spirit-level-screen";
+
+type Tool = "compass" | "spiritLevel";
 
 export default function ToolsScreen() {
   const { t } = useTranslation();
@@ -15,11 +17,15 @@ export default function ToolsScreen() {
       <SafeAreaView style={styles.container} edges={[]}>
         <Appbar.Header>
           <Appbar.BackAction onPress={() => setTool(null)} />
-          <Appbar.Content title={t(`outils.${tool}`)} />
+          <Appbar.Content title={t(`tools.${tool}`)} />
         </Appbar.Header>
-        <View style={styles.placeholder}>
-          <Text variant="bodyMedium">{t(`outils.${tool}Placeholder`)}</Text>
-        </View>
+        {tool === "spiritLevel" ? (
+          <SpiritLevelScreen />
+        ) : (
+          <View style={styles.placeholder}>
+            <Text variant="bodyMedium">{t(`tools.${tool}Placeholder`)}</Text>
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -27,20 +33,20 @@ export default function ToolsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       <Appbar.Header>
-        <Appbar.Content title={t('outils.title')} />
+        <Appbar.Content title={t("tools.title")} />
       </Appbar.Header>
       <List.Section>
         <List.Item
-          title={t('outils.boussole')}
+          title={t("tools.compass")}
           left={(props) => <List.Icon {...props} icon="compass" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => setTool('boussole')}
+          onPress={() => setTool("compass")}
         />
         <List.Item
-          title={t('outils.niveau')}
+          title={t("tools.spiritLevel")}
           left={(props) => <List.Icon {...props} icon="spirit-level" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => setTool('niveau')}
+          onPress={() => setTool("spiritLevel")}
         />
       </List.Section>
     </SafeAreaView>
@@ -49,5 +55,5 @@ export default function ToolsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  placeholder: { flex: 1, alignItems: "center", justifyContent: "center" },
 });

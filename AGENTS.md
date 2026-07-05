@@ -3,6 +3,23 @@
 Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing any code.
 Install native/Expo packages with `npx expo install <pkg>` (never plain `npm install`) so versions match the SDK.
 
+# Naming conventions
+
+**All code is written in English** — identifiers, file names, route/tab keys, component names,
+props, comments. The **only** French in the codebase lives in i18n translation *values*
+(`src/i18n/locales/fr.json`); everything else, including i18n *keys*, is English. Keep these
+canonical English terms consistent across the app, i18n keys, and backend routes:
+
+| Domain | Canonical code term (feature dir, route/tab key, i18n key) |
+| --- | --- |
+| Equipment | `equipment` |
+| Tools | `tools` — sub-tools: `compass`, `spiritLevel` |
+| Maintenance | `maintenance` |
+| Settings | `settings` |
+
+The user-facing labels (Équipements, Outils, Entretien, Paramètres, Boussole, Niveau) are
+translation *values* only — never mirror them into code identifiers or keys.
+
 # Architecture
 
 Expo Router shell + **react-native-paper** UI. The whole app is gated behind login.
@@ -20,18 +37,20 @@ Expo Router shell + **react-native-paper** UI. The whole app is gated behind log
 - **Pre-auth screens** — `login`, `register`, `forgot-password` (Expo Router routes). The auth gate
   in `_layout.tsx` lets these through while unauthenticated; everything else redirects to `/login`.
 - **Navigation** — single authed route `src/app/index.tsx` renders `src/components/main-tabs.tsx`,
-  a Paper `BottomNavigation` with 4 tabs: **Équipements, Outils, Entretien, Paramètres**. Tabs are
-  scenes (`BottomNavigation.SceneMap`), not Expo Router routes. Screens live in `src/features/*`.
-  - **Équipements** — full parity with the Symfony web app: create (new item on top), preset
+  a Paper `BottomNavigation` with 4 tabs (keys `equipment`, `tools`, `maintenance`, `settings`;
+  labels come from i18n). Tabs are scenes (`BottomNavigation.SceneMap`), not Expo Router routes.
+  Screens live in `src/features/*`.
+  - **Equipment** — full parity with the Symfony web app: create (new item on top), preset
     generation, per-item status toggle, bulk status / bulk delete, move up/down reorder,
     client-side status filter with counts, edit & delete. Data layer: `use-equipment.ts`
     (optimistic, reloads on error) + `types.ts`; API under `/api/equipment*`.
-  - **Outils** — groups the **Boussole** and **Niveau** tools via in-screen navigation
-    (`useState`, no router). Both are placeholders (sensors via `expo-sensors` to come).
-  - **Entretien** — the per-user battery-recharge reminder (`/api/battery`): enable switch +
+  - **Tools** — groups the **Compass** and **Level** tools via in-screen navigation
+    (`useState`, no router). Level is a two-axis spirit level (two independent tube gauges) using
+    `expo-sensors` `Accelerometer` (+ `expo-haptics`); Compass is still a placeholder.
+  - **Maintenance** — the per-user battery-recharge reminder (`/api/battery`): enable switch +
     frequency in days. Name chosen as an umbrella for future upkeep features.
 - **i18n** — `src/i18n/` (i18next + react-i18next), FR/EN, fallback FR, device language by default.
-  `src/i18n/language.ts` persists the user's choice in SecureStore; the Paramètres screen switches it.
+  `src/i18n/language.ts` persists the user's choice in SecureStore; the Settings screen switches it.
 
 ## Backend (Symfony, ../tool-camping-app)
 Stateless JSON API under `^/api` (LexikJWT; refresh tokens optional — see below), in `src/Http/Api/Controller/`:

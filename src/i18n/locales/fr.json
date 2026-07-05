@@ -1,9 +1,9 @@
 {
   "tabs": {
-    "equipements": "Équipements",
-    "outils": "Outils",
-    "entretien": "Entretien",
-    "parametres": "Paramètres"
+    "equipment": "Équipements",
+    "tools": "Outils",
+    "maintenance": "Entretien",
+    "settings": "Paramètres"
   },
   "login": {
     "title": "Connexion",
@@ -99,12 +99,15 @@
       "cta": "Nouvel équipement"
     }
   },
-  "outils": {
+  "tools": {
     "title": "Outils",
-    "boussole": "Boussole",
-    "niveau": "Niveau",
-    "boussolePlaceholder": "Boussole à venir",
-    "niveauPlaceholder": "Niveau à venir"
+    "compass": "Boussole",
+    "compassPlaceholder": "Boussole à venir",
+    "spiritLevel": "Niveau",
+    "spiritLevelInstruction": "Posez le téléphone à plat sur la surface à vérifier.",
+    "spiritLevelUnavailable": "Capteur d'accélération indisponible sur cet appareil.",
+    "spiritLevelAxisX": "Gauche–Droite",
+    "spiritLevelAxisY": "Avant–Arrière"
   },
   "battery": {
     "title": "Rappel de batterie",
@@ -119,7 +122,7 @@
     "saved": "Vos préférences de rappel ont été enregistrées.",
     "loadError": "Échec du chargement"
   },
-  "parametres": {
+  "settings": {
     "title": "Paramètres",
     "language": "Langue",
     "french": "Français",
