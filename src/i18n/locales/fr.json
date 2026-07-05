@@ -1,0 +1,130 @@
+{
+  "tabs": {
+    "equipements": "Équipements",
+    "outils": "Outils",
+    "entretien": "Entretien",
+    "parametres": "Paramètres"
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "E-mail ou mot de passe invalide",
+    "networkError": "Impossible de joindre le serveur",
+    "serverError": "Erreur serveur ({{status}})",
+    "forgotPasswordLink": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ? Créer un compte"
+  },
+  "register": {
+    "title": "Inscription",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "language": "Langue",
+    "agreeTerms": "J'accepte les conditions d'utilisation",
+    "submit": "Créer un compte",
+    "haveAccount": "Déjà un compte ? Se connecter",
+    "success": "Compte créé. Vérifiez vos e-mails pour confirmer votre adresse.",
+    "errors": {
+      "invalidEmail": "Adresse e-mail invalide",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "emailTaken": "Un compte existe déjà avec cette adresse",
+      "generic": "Impossible de créer le compte",
+      "network": "Impossible de joindre le serveur"
+    }
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "description": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.",
+    "email": "Adresse e-mail",
+    "submit": "Envoyer le lien",
+    "backToLogin": "Retour à la connexion",
+    "success": "Si un compte existe pour cette adresse, un e-mail de réinitialisation a été envoyé.",
+    "network": "Impossible de joindre le serveur"
+  },
+  "equipment": {
+    "title": "Équipements",
+    "create": "Créer",
+    "generate": "Générer une liste",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "status": { "inProgress": "En cours", "complete": "Terminé" },
+    "progress": { "label": "Progression" },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "reorder": "Réordonner",
+      "markComplete": "Marquer comme terminé",
+      "markInProgress": "Marquer comme en cours"
+    },
+    "modal": {
+      "createTitle": "Nouvel équipement",
+      "editTitle": "Modifier l'équipement",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Ex. : Tente 4 places",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "nameRequired": "Le nom est obligatoire"
+    },
+    "bulk": {
+      "selectedLabel": "sélectionné(s)",
+      "delete": "Supprimer la sélection",
+      "markAllInProgress": "Marquer la sélection en cours",
+      "markAllComplete": "Marquer la sélection terminée"
+    },
+    "confirm": {
+      "deleteTitle": "Supprimer cet équipement ?",
+      "deleteText": "Cette action est irréversible.",
+      "deleteBulkTitle": "Supprimer les équipements sélectionnés ?",
+      "confirm": "Oui",
+      "cancel": "Annuler"
+    },
+    "toast": {
+      "orderUpdated": "Ordre mis à jour",
+      "deleted": "Équipement supprimé",
+      "deletedBulk": "Équipements supprimés",
+      "statusChanged": "Statut mis à jour",
+      "created": "Équipement créé",
+      "updated": "Équipement mis à jour",
+      "generated": "Liste générée",
+      "error": "Une erreur est survenue"
+    },
+    "empty": {
+      "title": "Aucun équipement",
+      "text": "Commencez par créer un équipement.",
+      "cta": "Nouvel équipement"
+    }
+  },
+  "outils": {
+    "title": "Outils",
+    "boussole": "Boussole",
+    "niveau": "Niveau",
+    "boussolePlaceholder": "Boussole à venir",
+    "niveauPlaceholder": "Niveau à venir"
+  },
+  "battery": {
+    "title": "Rappel de batterie",
+    "description": "Recevez un rappel par e-mail pour penser à recharger la batterie de votre caravane.",
+    "activeLabel": "Activer les rappels",
+    "activeHelp": "Désactivé par défaut. Une fois activé, vous recevrez un e-mail selon la fréquence choisie.",
+    "frequencyLabel": "Fréquence",
+    "frequencyUnit": "jour(s)",
+    "frequencyHelp": "Nombre de jours entre chaque rappel.",
+    "frequencyRange": "La fréquence doit être comprise entre 1 et 365 jours.",
+    "save": "Enregistrer",
+    "saved": "Vos préférences de rappel ont été enregistrées.",
+    "loadError": "Échec du chargement"
+  },
+  "parametres": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "french": "Français",
+    "english": "English",
+    "loggedInAs": "Connecté en tant que {{email}}",
+    "logout": "Se déconnecter"
+  }
+}

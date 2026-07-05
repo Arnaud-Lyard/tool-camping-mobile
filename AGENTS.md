@@ -1,3 +1,54 @@
 # Expo HAS CHANGED
 
 Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing any code.
+Install native/Expo packages with `npx expo install <pkg>` (never plain `npm install`) so versions match the SDK.
+
+# Architecture
+
+Expo Router shell + **react-native-paper** UI. The whole app is gated behind login.
+
+- **Auth** — `src/auth/auth-context.tsx` (`AuthProvider` / `useAuth`). JWT obtained from the
+  Symfony backend (`../tool-camping-app`, see below), stored in `expo-secure-store`. `authedFetch`
+  transparently refreshes the JWT on 401. Routing gate lives in `src/app/_layout.tsx`: while
+  `status === 'loading'` it shows a spinner, then redirects between `/login` and `/`.
+- **API** — `src/api/client.ts` (`login`, `register`, `forgotPassword`, `refresh`, `apiFetch`).
+  Base URL in `src/constants/config.ts` (`API_BASE_URL`, override with `EXPO_PUBLIC_API_URL`).
+  ⚠️ The backend runs under FrankenPHP/Caddy: HTTPS :443 has a local **untrusted** cert that RN
+  cannot use, so point the app at **plain HTTP** (`http://localhost`, Android emulator `http://10.0.2.2`,
+  device `http://<LAN-IP>`). Dev serves HTTP on :80 because `compose.override.yaml` sets
+  `SERVER_NAME: "https://localhost, http://localhost"`.
+- **Pre-auth screens** — `login`, `register`, `forgot-password` (Expo Router routes). The auth gate
+  in `_layout.tsx` lets these through while unauthenticated; everything else redirects to `/login`.
+- **Navigation** — single authed route `src/app/index.tsx` renders `src/components/main-tabs.tsx`,
+  a Paper `BottomNavigation` with 4 tabs: **Équipements, Outils, Entretien, Paramètres**. Tabs are
+  scenes (`BottomNavigation.SceneMap`), not Expo Router routes. Screens live in `src/features/*`.
+  - **Équipements** — full parity with the Symfony web app: create (new item on top), preset
+    generation, per-item status toggle, bulk status / bulk delete, move up/down reorder,
+    client-side status filter with counts, edit & delete. Data layer: `use-equipment.ts`
+    (optimistic, reloads on error) + `types.ts`; API under `/api/equipment*`.
+  - **Outils** — groups the **Boussole** and **Niveau** tools via in-screen navigation
+    (`useState`, no router). Both are placeholders (sensors via `expo-sensors` to come).
+  - **Entretien** — the per-user battery-recharge reminder (`/api/battery`): enable switch +
+    frequency in days. Name chosen as an umbrella for future upkeep features.
+- **i18n** — `src/i18n/` (i18next + react-i18next), FR/EN, fallback FR, device language by default.
+  `src/i18n/language.ts` persists the user's choice in SecureStore; the Paramètres screen switches it.
+
+## Backend (Symfony, ../tool-camping-app)
+Stateless JSON API under `^/api` (LexikJWT; refresh tokens optional — see below), in `src/Http/Api/Controller/`:
+- `POST /api/login_check` → `{ token }`, `GET /api/me`
+- Public auth (`AuthApiController`): `POST /api/register` (creates user + sends verification email),
+  `POST /api/forgot-password` (sends reset email, always 200). Email verification + the reset form
+  are completed via the signed links emailed to the user (handled by the web app).
+- Equipment: `GET /api/equipment`, `POST /api/equipment` (create), `POST /api/equipment/generate`,
+  `POST /api/equipment/reorder`, `POST /api/equipment/status`, `POST /api/equipment/bulk-delete`,
+  `PATCH /api/equipment/{id}`, `DELETE /api/equipment/{id}`
+- Battery: `GET /api/battery`, `PUT /api/battery`
+
+These mirror the web `/user/*` controllers but are stateless (JWT, JSON bodies, no CSRF). Preset
+lists are shared via `App\Domain\Equipment\EquipmentPresets`. The web form_login firewall is untouched.
+
+Refresh tokens are **not** enabled (the `refresh_jwt` firewall requires
+`markitosgv/jwt-refresh-token-bundle`). The client already tolerates a `{ token }`-only login; on a
+401 with no refresh token it signs out. To enable later: install the bundle, re-add the
+`api_token_refresh` firewall (`refresh_jwt: { check_path: /api/token/refresh }`) + its
+`PUBLIC_ACCESS` access_control rule, and the `/api/token/refresh` route.

@@ -1,0 +1,130 @@
+{
+  "tabs": {
+    "equipements": "Equipment",
+    "outils": "Tools",
+    "entretien": "Maintenance",
+    "parametres": "Settings"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Sign in",
+    "error": "Invalid email or password",
+    "networkError": "Unable to reach the server",
+    "serverError": "Server error ({{status}})",
+    "forgotPasswordLink": "Forgot password?",
+    "noAccount": "No account yet? Create one"
+  },
+  "register": {
+    "title": "Sign up",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "language": "Language",
+    "agreeTerms": "I accept the terms of use",
+    "submit": "Create account",
+    "haveAccount": "Already have an account? Sign in",
+    "success": "Account created. Check your email to confirm your address.",
+    "errors": {
+      "invalidEmail": "Invalid email address",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "emailTaken": "An account already exists with this address",
+      "generic": "Unable to create the account",
+      "network": "Unable to reach the server"
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "description": "Enter your email address to receive a reset link.",
+    "email": "Email address",
+    "submit": "Send link",
+    "backToLogin": "Back to sign in",
+    "success": "If an account exists for this address, a reset email has been sent.",
+    "network": "Unable to reach the server"
+  },
+  "equipment": {
+    "title": "Equipment",
+    "create": "Create",
+    "generate": "Generate a list",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "status": { "inProgress": "In progress", "complete": "Complete" },
+    "progress": { "label": "Progress" },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "reorder": "Reorder",
+      "markComplete": "Mark as complete",
+      "markInProgress": "Mark as in progress"
+    },
+    "modal": {
+      "createTitle": "New equipment",
+      "editTitle": "Edit equipment",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. 4-person tent",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameRequired": "Name is required"
+    },
+    "bulk": {
+      "selectedLabel": "selected",
+      "delete": "Delete selection",
+      "markAllInProgress": "Mark selection as in progress",
+      "markAllComplete": "Mark selection as complete"
+    },
+    "confirm": {
+      "deleteTitle": "Delete this equipment?",
+      "deleteText": "This action cannot be undone.",
+      "deleteBulkTitle": "Delete the selected equipment?",
+      "confirm": "Yes",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "orderUpdated": "Order updated",
+      "deleted": "Equipment deleted",
+      "deletedBulk": "Equipment deleted",
+      "statusChanged": "Status updated",
+      "created": "Equipment created",
+      "updated": "Equipment updated",
+      "generated": "List generated",
+      "error": "Something went wrong"
+    },
+    "empty": {
+      "title": "No equipment",
+      "text": "Get started by creating an equipment item.",
+      "cta": "New equipment"
+    }
+  },
+  "outils": {
+    "title": "Tools",
+    "boussole": "Compass",
+    "niveau": "Level",
+    "boussolePlaceholder": "Compass coming soon",
+    "niveauPlaceholder": "Level coming soon"
+  },
+  "battery": {
+    "title": "Battery reminder",
+    "description": "Get an email reminder to recharge your caravan battery.",
+    "activeLabel": "Enable reminders",
+    "activeHelp": "Disabled by default. Once enabled, you'll receive an email at the chosen frequency.",
+    "frequencyLabel": "Frequency",
+    "frequencyUnit": "day(s)",
+    "frequencyHelp": "Number of days between each reminder.",
+    "frequencyRange": "Frequency must be between 1 and 365 days.",
+    "save": "Save",
+    "saved": "Your reminder preferences have been saved.",
+    "loadError": "Failed to load"
+  },
+  "parametres": {
+    "title": "Settings",
+    "language": "Language",
+    "french": "Français",
+    "english": "English",
+    "loggedInAs": "Signed in as {{email}}",
+    "logout": "Sign out"
+  }
+}
