@@ -102,7 +102,12 @@
   "tools": {
     "title": "Tools",
     "compass": "Compass",
-    "compassPlaceholder": "Compass coming soon",
+    "compassInstruction": "Hold the phone flat, away from metal objects.",
+    "compassUnavailable": "Magnetometer unavailable on this device.",
+    "compassNorth": "N",
+    "compassEast": "E",
+    "compassSouth": "S",
+    "compassWest": "W",
     "spiritLevel": "Level",
     "spiritLevelInstruction": "Place the phone flat on the surface to check.",
     "spiritLevelUnavailable": "Accelerometer sensor unavailable on this device.",

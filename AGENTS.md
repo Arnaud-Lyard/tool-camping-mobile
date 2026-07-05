@@ -46,7 +46,8 @@ Expo Router shell + **react-native-paper** UI. The whole app is gated behind log
     (optimistic, reloads on error) + `types.ts`; API under `/api/equipment*`.
   - **Tools** — groups the **Compass** and **Level** tools via in-screen navigation
     (`useState`, no router). Level is a two-axis spirit level (two independent tube gauges) using
-    `expo-sensors` `Accelerometer` (+ `expo-haptics`); Compass is still a placeholder.
+    `expo-sensors` `Accelerometer` (+ `expo-haptics`); Compass is a magnetic heading dial using
+    `expo-sensors` `Magnetometer` (no location permission).
   - **Maintenance** — the per-user battery-recharge reminder (`/api/battery`): enable switch +
     frequency in days. Name chosen as an umbrella for future upkeep features.
 - **i18n** — `src/i18n/` (i18next + react-i18next), FR/EN, fallback FR, device language by default.

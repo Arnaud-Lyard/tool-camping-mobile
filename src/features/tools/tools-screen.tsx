@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
-import { Appbar, List, Text } from "react-native-paper";
+import { StyleSheet } from "react-native";
+import { Appbar, List } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import CompassScreen from "./compass-screen";
 import SpiritLevelScreen from "./spirit-level-screen";
 
 type Tool = "compass" | "spiritLevel";
@@ -19,13 +20,7 @@ export default function ToolsScreen() {
           <Appbar.BackAction onPress={() => setTool(null)} />
           <Appbar.Content title={t(`tools.${tool}`)} />
         </Appbar.Header>
-        {tool === "spiritLevel" ? (
-          <SpiritLevelScreen />
-        ) : (
-          <View style={styles.placeholder}>
-            <Text variant="bodyMedium">{t(`tools.${tool}Placeholder`)}</Text>
-          </View>
-        )}
+        {tool === "spiritLevel" ? <SpiritLevelScreen /> : <CompassScreen />}
       </SafeAreaView>
     );
   }
@@ -55,5 +50,4 @@ export default function ToolsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  placeholder: { flex: 1, alignItems: "center", justifyContent: "center" },
 });

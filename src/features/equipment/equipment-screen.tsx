@@ -112,7 +112,7 @@ const EquipmentRow = memo(function EquipmentRow({
   );
 });
 
-export default function EquipementsScreen() {
+export default function EquipmentScreen() {
   const { t } = useTranslation();
   const eq = useEquipment();
 

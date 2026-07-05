@@ -102,7 +102,12 @@
   "tools": {
     "title": "Outils",
     "compass": "Boussole",
-    "compassPlaceholder": "Boussole à venir",
+    "compassInstruction": "Tenez le téléphone à plat, loin des objets métalliques.",
+    "compassUnavailable": "Magnétomètre indisponible sur cet appareil.",
+    "compassNorth": "N",
+    "compassEast": "E",
+    "compassSouth": "S",
+    "compassWest": "O",
     "spiritLevel": "Niveau",
     "spiritLevelInstruction": "Posez le téléphone à plat sur la surface à vérifier.",
     "spiritLevelUnavailable": "Capteur d'accélération indisponible sur cet appareil.",
