@@ -37,7 +37,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Autorisez l'accès à la localisation pour calculer les heures de lever et coucher du soleil et de la lune."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

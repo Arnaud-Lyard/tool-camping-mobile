@@ -13,7 +13,7 @@ canonical English terms consistent across the app, i18n keys, and backend routes
 | Domain | Canonical code term (feature dir, route/tab key, i18n key) |
 | --- | --- |
 | Equipment | `equipment` |
-| Tools | `tools` — sub-tools: `compass`, `spiritLevel` |
+| Tools | `tools` — sub-tools: `compass`, `spiritLevel`, `barometer`, `altimeter`, `sunMoon` |
 | Maintenance | `maintenance` |
 | Settings | `settings` |
 
@@ -44,10 +44,15 @@ Expo Router shell + **react-native-paper** UI. The whole app is gated behind log
     generation, per-item status toggle, bulk status / bulk delete, move up/down reorder,
     client-side status filter with counts, edit & delete. Data layer: `use-equipment.ts`
     (optimistic, reloads on error) + `types.ts`; API under `/api/equipment*`.
-  - **Tools** — groups the **Compass** and **Level** tools via in-screen navigation
-    (`useState`, no router). Level is a two-axis spirit level (two independent tube gauges) using
-    `expo-sensors` `Accelerometer` (+ `expo-haptics`); Compass is a magnetic heading dial using
-    `expo-sensors` `Magnetometer` (no location permission).
+  - **Tools** — groups five in-screen tools (`useState`, no router). Two are sensor-based:
+    **Level** (two-axis spirit level, `expo-sensors` `Accelerometer` + `expo-haptics`) and
+    **Compass** (magnetic heading dial, `expo-sensors` `Magnetometer`, no permission). Three are
+    position-based and share the `use-location.ts` hook (`expo-location`, foreground permission):
+    **Sun / Moon** (offline sunrise/sunset/solar-noon/golden-hour + moon phase, illumination & next
+    full moon, computed locally with `suncalc`; astro maths in `sun-moon.ts` + ambient `suncalc.d.ts`),
+    **Barometer** (real surface pressure + 3 h trend from the **Open-Meteo** API — `open-meteo.ts`,
+    free/no key, **requires network**, no offline fallback) and **Altimeter** (GPS altitude from the
+    location fix). Each screen handles its own loading/permission/error states.
   - **Maintenance** — the per-user battery-recharge reminder (`/api/battery`): enable switch +
     frequency in days. Name chosen as an umbrella for future upkeep features.
 - **i18n** — `src/i18n/` (i18next + react-i18next), FR/EN, fallback FR, device language by default.
