@@ -1,4 +1,4 @@
-import SunCalc, { type SunTimes } from "suncalc";
+import { getMoonIllumination, getTimes, type SunTimes } from "suncalc";
 
 export type MoonInfo = {
   /** 0=new … 4=full … 7=waning crescent. Maps to the `sunMoonPhase{n}` keys. */
@@ -10,11 +10,11 @@ export type MoonInfo = {
 };
 
 export function getSunTimes(date: Date, lat: number, lon: number): SunTimes {
-  return SunCalc.getTimes(date, lat, lon);
+  return getTimes(date, lat, lon);
 }
 
 export function getMoonInfo(date: Date): MoonInfo {
-  const { fraction, phase } = SunCalc.getMoonIllumination(date);
+  const { fraction, phase } = getMoonIllumination(date);
   return {
     phaseIndex: Math.round(phase * 8) % 8,
     illumination: Math.round(fraction * 100),
@@ -26,10 +26,10 @@ export function getMoonInfo(date: Date): MoonInfo {
 // phase crosses 0.5 upward — i.e. the next full moon. Location-independent.
 function findNextFullMoon(from: Date): Date | null {
   const stepMs = 60 * 60 * 1000;
-  let prev = SunCalc.getMoonIllumination(from).phase;
+  let prev = getMoonIllumination(from).phase;
   for (let i = 1; i <= 24 * 40; i++) {
     const d = new Date(from.getTime() + i * stepMs);
-    const phase = SunCalc.getMoonIllumination(d).phase;
+    const phase = getMoonIllumination(d).phase;
     if (prev < 0.5 && phase >= 0.5) return d;
     prev = phase;
   }

@@ -55,25 +55,25 @@ export default function SunMoonScreen() {
           <View style={styles.centerRow}>
             <ActivityIndicator />
             <Text variant="bodyMedium" style={styles.muted}>
-              {t("sunMoonLocating")}
+              {t("tools.sunMoonLocating")}
             </Text>
           </View>
         ) : permission === "denied" ? (
           <Text variant="bodyMedium" style={styles.muted}>
-            {t("sunMoonPermissionNeeded")}
+            {t("tools.sunMoonPermissionNeeded")}
           </Text>
         ) : sun ? (
           <>
             {sunsetCountdown ? (
               <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
-                {t("sunMoonSunsetIn", { time: sunsetCountdown })}
+                {t("tools.sunMoonSunsetIn", { time: sunsetCountdown })}
               </Text>
             ) : null}
-            <InfoRow label={t("sunMoonSunrise")} value={formatTime(sun.sunrise)} />
-            <InfoRow label={t("sunMoonSolarNoon")} value={formatTime(sun.solarNoon)} />
-            <InfoRow label={t("sunMoonGoldenHour")} value={formatTime(sun.goldenHour)} />
-            <InfoRow label={t("sunMoonSunset")} value={formatTime(sun.sunset)} />
-            <InfoRow label={t("sunMoonDayLength")} value={dayLength} />
+            <InfoRow label={t("tools.sunMoonSunrise")} value={formatTime(sun.sunrise)} />
+            <InfoRow label={t("tools.sunMoonSolarNoon")} value={formatTime(sun.solarNoon)} />
+            <InfoRow label={t("tools.sunMoonGoldenHour")} value={formatTime(sun.goldenHour)} />
+            <InfoRow label={t("tools.sunMoonSunset")} value={formatTime(sun.sunset)} />
+            <InfoRow label={t("tools.sunMoonDayLength")} value={dayLength} />
           </>
         ) : null}
       </View>
@@ -83,20 +83,20 @@ export default function SunMoonScreen() {
       {/* Moon (location-independent) */}
       <View style={styles.section}>
         <Text variant="labelLarge" style={styles.muted}>
-          {t("sunMoonMoon")}
+          {t("tools.sunMoonMoon")}
         </Text>
         <View style={styles.moonHeader}>
           <Text style={styles.emoji}>{MOON_EMOJI[moon.phaseIndex]}</Text>
           <View style={styles.moonText}>
-            <Text variant="titleLarge">{t(`sunMoonPhase${moon.phaseIndex}`)}</Text>
+            <Text variant="titleLarge">{t(`tools.sunMoonPhase${moon.phaseIndex}`)}</Text>
             <Text variant="bodyMedium" style={styles.muted}>
-              {t("sunMoonIllumination", { percent: moon.illumination })}
+              {t("tools.sunMoonIllumination", { percent: moon.illumination })}
             </Text>
           </View>
         </View>
         {moon.nextFullMoon ? (
           <InfoRow
-            label={t("sunMoonNextFullMoon")}
+            label={t("tools.sunMoonNextFullMoon")}
             value={formatDate(moon.nextFullMoon)}
           />
         ) : null}

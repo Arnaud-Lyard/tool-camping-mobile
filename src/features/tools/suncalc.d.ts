@@ -1,5 +1,7 @@
 // Minimal ambient declaration for the parts of `suncalc` this app uses
-// (the package ships no TypeScript types).
+// (the package ships no TypeScript types). Declared with named exports so
+// consumers use named imports — these map to direct property access on the
+// CommonJS `module.exports` object, avoiding default-interop `undefined`.
 declare module "suncalc" {
   export interface SunTimes {
     sunrise: Date;
@@ -29,11 +31,7 @@ declare module "suncalc" {
     alwaysDown?: boolean;
   }
 
-  const SunCalc: {
-    getTimes(date: Date, latitude: number, longitude: number, height?: number): SunTimes;
-    getMoonIllumination(date: Date): MoonIllumination;
-    getMoonTimes(date: Date, latitude: number, longitude: number, inUTC?: boolean): MoonTimes;
-  };
-
-  export default SunCalc;
+  export function getTimes(date: Date, latitude: number, longitude: number, height?: number): SunTimes;
+  export function getMoonIllumination(date: Date): MoonIllumination;
+  export function getMoonTimes(date: Date, latitude: number, longitude: number, inUTC?: boolean): MoonTimes;
 }
