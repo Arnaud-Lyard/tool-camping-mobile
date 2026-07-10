@@ -1,60 +1,150 @@
-export type PressureReading = {
+export type CurrentConditions = {
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  weathercode: number;
+};
+
+export type DailyForecast = {
+  /** ISO local date, e.g. "2026-07-07". */
+  date: string;
+  tempMin: number;
+  tempMax: number;
+  precipitation: number;
+  weathercode: number;
+};
+
+export type WeatherData = {
   /** Current surface pressure at the location, in hPa. */
   pressure: number;
   /** Change over the last ~3 h in hPa (positive = rising). */
   trend: number;
+  /** Current conditions from the Open-Meteo `current` endpoint. */
+  current: CurrentConditions;
+  /** Forecast for the next 5 days (today + 4 more). */
+  daily: DailyForecast[];
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-// Open-Meteo hourly timestamps look like "2026-07-05T14:00" (no seconds) and,
-// with timezone=UTC, are in UTC — so we can match the current hour by string.
-const utcHourKey = (d: Date) =>
-  `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(
-    d.getUTCHours(),
-  )}:00`;
+const localHourKey = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
 
-/**
- * Fetches the real atmospheric pressure at a position from Open-Meteo
- * (free, no API key). Reads the hourly surface-pressure series (surface
- * pressure at the location's elevation) and derives a ~3 h trend. Throws on
- * network or unexpected-shape errors — the caller shows an error state
- * (no offline fallback).
- *
- * Relies only on the documented `hourly` structure + `past_days`/`forecast_days`
- * so the request stays valid across API revisions.
- */
-export async function fetchSurfacePressure(
-  lat: number,
-  lon: number,
-): Promise<PressureReading> {
+const localDateKey = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+const WMO_EMOJI: Record<number, string> = {
+  0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+  45: "🌫️", 48: "🌫️",
+  51: "🌦️", 53: "🌦️", 55: "🌦️", 56: "🌨️", 57: "🌨️",
+  61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌨️", 67: "🌨️",
+  71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️",
+  80: "🌦️", 81: "🌦️", 82: "🌦️", 85: "🌨️", 86: "🌨️",
+  95: "⛈️", 96: "⛈️", 99: "⛈️",
+};
+
+export function weatherEmoji(code: number): string {
+  return WMO_EMOJI[code] ?? "🌡️";
+}
+
+export function weatherI18nKey(code: number): string {
+  if (code === 0) return "wmo_clear";
+  if (code === 1) return "wmo_mainly_clear";
+  if (code === 2) return "wmo_partly_cloudy";
+  if (code === 3) return "wmo_overcast";
+  if (code === 45 || code === 48) return "wmo_fog";
+  if (code >= 51 && code <= 57) return "wmo_drizzle";
+  if (code >= 61 && code <= 67) return "wmo_rain";
+  if (code >= 71 && code <= 77) return "wmo_snow";
+  if (code >= 80 && code <= 82) return "wmo_showers";
+  if (code === 85 || code === 86) return "wmo_snow_showers";
+  if (code === 95) return "wmo_thunder";
+  if (code === 96 || code === 99) return "wmo_thunder_hail";
+  return "wmo_clear";
+}
+
+const COMPASS_FR = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+const COMPASS_EN = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+export function degreesToCompass(deg: number, lang: string): string {
+  const dirs = lang === "en" ? COMPASS_EN : COMPASS_FR;
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+export async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
   const url =
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${lat}&longitude=${lon}` +
-    "&hourly=surface_pressure&past_days=1&forecast_days=1&timezone=UTC";
+    "&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code" +
+    "&hourly=surface_pressure" +
+    "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code" +
+    "&past_days=1&forecast_days=5&timezone=auto";
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
-
   const json = await res.json();
+
+  // --- Current conditions ---
+  const cur = json?.current;
+  if (
+    typeof cur?.temperature_2m !== "number" ||
+    typeof cur?.wind_speed_10m !== "number" ||
+    typeof cur?.wind_direction_10m !== "number" ||
+    typeof cur?.weather_code !== "number"
+  ) {
+    throw new Error("Open-Meteo: missing current conditions");
+  }
+  const current: CurrentConditions = {
+    temperature: cur.temperature_2m,
+    windspeed: cur.wind_speed_10m,
+    winddirection: cur.wind_direction_10m,
+    weathercode: cur.weather_code,
+  };
+
+  // --- Surface pressure + ~3 h trend ---
   const times: unknown = json?.hourly?.time;
   const values: unknown = json?.hourly?.surface_pressure;
   if (!Array.isArray(times) || !Array.isArray(values)) {
     throw new Error("Open-Meteo: missing hourly surface_pressure");
   }
-
-  // Index of the current hour; fall back to the latest hour with a value.
-  let idx = times.indexOf(utcHourKey(new Date()));
+  let idx = times.indexOf(localHourKey(new Date()));
   if (idx < 0 || typeof values[idx] !== "number") {
-    idx = values.reduce((last, v, i) => (typeof v === "number" ? i : last), -1);
+    idx = values.reduce((last: number, v: unknown, i: number) => (typeof v === "number" ? i : last), -1);
   }
   const pressure = values[idx];
-  if (typeof pressure !== "number") {
-    throw new Error("Open-Meteo: no pressure value");
-  }
-
+  if (typeof pressure !== "number") throw new Error("Open-Meteo: no pressure value");
   const past = values[idx - 3];
   const trend = typeof past === "number" ? pressure - past : 0;
 
-  return { pressure, trend };
+  // --- Daily forecast: today + 4 more days (5 total) ---
+  const days: unknown = json?.daily?.time;
+  const maxT: unknown = json?.daily?.temperature_2m_max;
+  const minT: unknown = json?.daily?.temperature_2m_min;
+  const precip: unknown = json?.daily?.precipitation_sum;
+  const codes: unknown = json?.daily?.weather_code;
+  if (
+    !Array.isArray(days) || !Array.isArray(maxT) ||
+    !Array.isArray(minT) || !Array.isArray(precip) || !Array.isArray(codes)
+  ) {
+    throw new Error("Open-Meteo: missing daily forecast");
+  }
+  let todayIdx = days.indexOf(localDateKey(new Date()));
+  if (todayIdx < 0) todayIdx = 1; // past_days=1 → today is at index 1
+  const daily: DailyForecast[] = [];
+  for (let i = todayIdx; i < days.length && daily.length < 5; i++) {
+    const date = days[i];
+    const tMax = maxT[i];
+    const tMin = minT[i];
+    const p = precip[i];
+    const wc = codes[i];
+    if (
+      typeof date === "string" && typeof tMax === "number" &&
+      typeof tMin === "number" && typeof p === "number" && typeof wc === "number"
+    ) {
+      daily.push({ date, tempMin: tMin, tempMax: tMax, precipitation: p, weathercode: wc });
+    }
+  }
+  if (daily.length === 0) throw new Error("Open-Meteo: no forecast days");
+
+  return { pressure, trend, current, daily };
 }

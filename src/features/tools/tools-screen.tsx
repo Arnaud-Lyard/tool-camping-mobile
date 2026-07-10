@@ -1,23 +1,19 @@
 import { useState, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { Appbar, List } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import AltimeterScreen from "./altimeter-screen";
-import BarometerScreen from "./barometer-screen";
+import BatteryScreen from "./battery-screen";
 import CompassScreen from "./compass-screen";
 import SpiritLevelScreen from "./spirit-level-screen";
-import SunMoonScreen from "./sun-moon-screen";
 
-type Tool = "compass" | "spiritLevel" | "barometer" | "altimeter" | "sunMoon";
+type Tool = "compass" | "spiritLevel" | "battery";
 
 const toolScreens: Record<Tool, ComponentType> = {
   compass: CompassScreen,
   spiritLevel: SpiritLevelScreen,
-  barometer: BarometerScreen,
-  altimeter: AltimeterScreen,
-  sunMoon: SunMoonScreen,
+  battery: BatteryScreen,
 };
 
 export default function ToolsScreen() {
@@ -32,7 +28,9 @@ export default function ToolsScreen() {
           <Appbar.BackAction onPress={() => setTool(null)} />
           <Appbar.Content title={t(`tools.${tool}`)} />
         </Appbar.Header>
-        <ToolScreen />
+        <ScrollView>
+          <ToolScreen />
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -56,22 +54,10 @@ export default function ToolsScreen() {
           onPress={() => setTool("spiritLevel")}
         />
         <List.Item
-          title={t("tools.barometer")}
-          left={(props) => <List.Icon {...props} icon="gauge" />}
+          title={t("tools.battery")}
+          left={(props) => <List.Icon {...props} icon="battery-charging" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => setTool("barometer")}
-        />
-        <List.Item
-          title={t("tools.altimeter")}
-          left={(props) => <List.Icon {...props} icon="altimeter" />}
-          right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => setTool("altimeter")}
-        />
-        <List.Item
-          title={t("tools.sunMoon")}
-          left={(props) => <List.Icon {...props} icon="weather-sunset" />}
-          right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() => setTool("sunMoon")}
+          onPress={() => setTool("battery")}
         />
       </List.Section>
     </SafeAreaView>
