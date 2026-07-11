@@ -14,6 +14,15 @@ export type DailyForecast = {
   weathercode: number;
 };
 
+export type HourlyEntry = {
+  time: string; // display label, e.g. "14:00"
+  temperature: number;
+  precipitation: number; // probability %
+  weathercode: number;
+  isCurrent: boolean;
+  isPast: boolean;
+};
+
 export type WeatherData = {
   /** Current surface pressure at the location, in hPa. */
   pressure: number;
@@ -21,6 +30,8 @@ export type WeatherData = {
   trend: number;
   /** Current conditions from the Open-Meteo `current` endpoint. */
   current: CurrentConditions;
+  /** All 24 hourly entries for today (00:00–23:00). */
+  hourly: HourlyEntry[];
   /** Forecast for the next 5 days (today + 4 more). */
   daily: DailyForecast[];
 };
@@ -76,9 +87,9 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${lat}&longitude=${lon}` +
     "&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code" +
-    "&hourly=surface_pressure" +
+    "&hourly=surface_pressure,temperature_2m,precipitation_probability,weather_code" +
     "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code" +
-    "&past_days=1&forecast_days=5&timezone=auto";
+    "&past_days=1&forecast_days=6&timezone=auto";
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
@@ -146,5 +157,33 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
   }
   if (daily.length === 0) throw new Error("Open-Meteo: no forecast days");
 
-  return { pressure, trend, current, daily };
+  // --- Hourly strip: all 24 h of today ---
+  const hourlyTimes: unknown = json?.hourly?.time;
+  const hourlyTemps: unknown = json?.hourly?.temperature_2m;
+  const hourlyProbs: unknown = json?.hourly?.precipitation_probability;
+  const hourlyCodes: unknown = json?.hourly?.weather_code;
+  const todayDate = localDateKey(new Date());
+  const curKey = localHourKey(new Date());
+  const hourly: HourlyEntry[] = [];
+  if (
+    Array.isArray(hourlyTimes) && Array.isArray(hourlyTemps) &&
+    Array.isArray(hourlyProbs) && Array.isArray(hourlyCodes)
+  ) {
+    for (let i = 0; i < hourlyTimes.length; i++) {
+      const ts = hourlyTimes[i];
+      if (typeof ts !== "string" || !ts.startsWith(todayDate)) continue;
+      const temp = hourlyTemps[i];
+      if (typeof temp !== "number") continue;
+      hourly.push({
+        time: ts.substring(11, 16),
+        temperature: temp,
+        precipitation: typeof hourlyProbs[i] === "number" ? (hourlyProbs[i] as number) : 0,
+        weathercode: typeof hourlyCodes[i] === "number" ? (hourlyCodes[i] as number) : 0,
+        isCurrent: ts === curKey,
+        isPast: ts < curKey,
+      });
+    }
+  }
+
+  return { pressure, trend, current, hourly, daily };
 }

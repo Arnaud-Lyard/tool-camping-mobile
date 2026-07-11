@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import {
   Button,
   Checkbox,
@@ -10,10 +10,12 @@ import {
   Snackbar,
   Text,
   TextInput,
+  useTheme,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, register as apiRegister } from '@/api/client';
+import { AuthHero } from '@/components/auth-hero';
 import type { Language } from '@/i18n';
 
 const ERROR_KEYS: Record<string, string> = {
@@ -25,10 +27,13 @@ const ERROR_KEYS: Record<string, string> = {
 export default function RegisterScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const theme = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [language, setLanguage] = useState<Language>(i18n.language === 'en' ? 'en' : 'fr');
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,72 +64,100 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.root} edges={[]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text variant="headlineMedium" style={styles.title}>
-            {t('register.title')}
-          </Text>
+        <ScrollView bounces={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <AuthHero />
 
-          <TextInput
-            label={t('register.email')}
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-          />
-          <TextInput
-            label={t('register.password')}
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            secureTextEntry
-            textContentType="newPassword"
-          />
-          <TextInput
-            label={t('register.confirmPassword')}
-            value={confirm}
-            onChangeText={setConfirm}
-            mode="outlined"
-            secureTextEntry
-            error={mismatch}
-          />
-          <HelperText type="error" visible={mismatch}>
-            {t('register.errors.passwordMismatch')}
-          </HelperText>
+          <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <Text variant="headlineMedium" style={styles.heading}>
+              {t('register.heading')}
+            </Text>
 
-          <Text variant="labelLarge">{t('register.language')}</Text>
-          <SegmentedButtons
-            value={language}
-            onValueChange={(v) => setLanguage(v as Language)}
-            buttons={[
-              { value: 'fr', label: 'Français' },
-              { value: 'en', label: 'English' },
-            ]}
-          />
+            <TextInput
+              label={t('register.email')}
+              value={email}
+              onChangeText={setEmail}
+              mode="outlined"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              placeholder={t('login.emailPlaceholder')}
+              left={<TextInput.Icon icon="email-outline" />}
+            />
+            <TextInput
+              label={t('register.password')}
+              value={password}
+              onChangeText={setPassword}
+              mode="outlined"
+              secureTextEntry={!showPassword}
+              textContentType="newPassword"
+              placeholder="••••••••"
+              left={<TextInput.Icon icon="lock-outline" />}
+              right={
+                <TextInput.Icon
+                  icon={showPassword ? 'eye-off' : 'eye'}
+                  onPress={() => setShowPassword((v) => !v)}
+                />
+              }
+            />
+            <TextInput
+              label={t('register.confirmPassword')}
+              value={confirm}
+              onChangeText={setConfirm}
+              mode="outlined"
+              secureTextEntry={!showConfirm}
+              error={mismatch}
+              placeholder="••••••••"
+              left={<TextInput.Icon icon="lock-outline" />}
+              right={
+                <TextInput.Icon
+                  icon={showConfirm ? 'eye-off' : 'eye'}
+                  onPress={() => setShowConfirm((v) => !v)}
+                />
+              }
+            />
+            <HelperText type="error" visible={mismatch}>
+              {t('register.errors.passwordMismatch')}
+            </HelperText>
 
-          <Checkbox.Item
-            label={t('register.agreeTerms')}
-            status={agree ? 'checked' : 'unchecked'}
-            onPress={() => setAgree((a) => !a)}
-            position="leading"
-            style={styles.terms}
-          />
+            <Text variant="labelLarge">{t('register.language')}</Text>
+            <SegmentedButtons
+              value={language}
+              onValueChange={(v) => setLanguage(v as Language)}
+              buttons={[
+                { value: 'fr', label: 'Français' },
+                { value: 'en', label: 'English' },
+              ]}
+            />
 
-          <HelperText type="error" visible={!!error}>
-            {error}
-          </HelperText>
+            <Checkbox.Item
+              label={t('register.agreeTerms')}
+              status={agree ? 'checked' : 'unchecked'}
+              onPress={() => setAgree((a) => !a)}
+              position="leading"
+              style={styles.terms}
+            />
 
-          <Button mode="contained" onPress={onSubmit} loading={submitting} disabled={!canSubmit}>
-            {t('register.submit')}
-          </Button>
-          <Button mode="text" onPress={() => router.replace('/login')}>
-            {t('register.haveAccount')}
-          </Button>
+            <HelperText type="error" visible={!!error}>
+              {error}
+            </HelperText>
+
+            <Button
+              mode="contained"
+              onPress={onSubmit}
+              loading={submitting}
+              disabled={!canSubmit}
+              style={styles.submitBtn}
+              contentStyle={styles.submitContent}>
+              {t('register.submit')}
+            </Button>
+            <Button mode="text" onPress={() => router.replace('/login')} style={styles.linkBtn}>
+              {t('register.haveAccount')}
+            </Button>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -136,9 +169,21 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  root: { flex: 1, backgroundColor: '#0a0e27' },
   flex: { flex: 1 },
-  content: { padding: 24, gap: 10 },
-  title: { textAlign: 'center', marginBottom: 8 },
+  scroll: { flexGrow: 1 },
+  card: {
+    flex: 1,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 40,
+    gap: 10,
+  },
+  heading: { fontWeight: '700', marginBottom: 6 },
   terms: { paddingHorizontal: 0 },
+  submitBtn: { marginTop: 4, borderRadius: 14 },
+  submitContent: { height: 50 },
+  linkBtn: { marginTop: 2 },
 });

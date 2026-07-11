@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BottomNavigation } from "react-native-paper";
 
-import EquipmentScreen from "@/features/equipment/equipment-screen";
+import ChecklistScreen from "@/features/checklist/checklist-screen";
 import SettingsScreen from "@/features/settings/settings-screen";
 import ToolsScreen from "@/features/tools/tools-screen";
 import WeatherHomeScreen from "@/features/weather/weather-home-screen";
 
 const renderScene = BottomNavigation.SceneMap({
   weather: WeatherHomeScreen,
-  equipment: EquipmentScreen,
+  checklist: ChecklistScreen,
   tools: ToolsScreen,
   settings: SettingsScreen,
 });
@@ -26,10 +26,10 @@ export default function MainTabs() {
       unfocusedIcon: "home-thermometer-outline",
     },
     {
-      key: "equipment",
-      title: t("tabs.equipment"),
-      focusedIcon: "bag-personal",
-      unfocusedIcon: "bag-personal-outline",
+      key: "checklist",
+      title: t("tabs.checklist"),
+      focusedIcon: "clipboard-check",
+      unfocusedIcon: "clipboard-check-outline",
     },
     {
       key: "tools",

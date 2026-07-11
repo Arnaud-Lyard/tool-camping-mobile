@@ -10,14 +10,14 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import type { Equipment } from './types';
+import type { ChecklistItem } from './types';
 
 /** Fixed row height — required so absolute positions map cleanly to slots. */
 export const ITEM_HEIGHT = 56;
 
 type Positions = Record<number, number>;
 
-const fromItems = (items: Equipment[]): Positions =>
+const fromItems = (items: ChecklistItem[]): Positions =>
   Object.fromEntries(items.map((item, index) => [item.id, index]));
 
 const clamp = (value: number, lower: number, upper: number): number => {
@@ -37,12 +37,12 @@ const objectMove = (positions: Positions, from: number, to: number): Positions =
 };
 
 type RowProps = {
-  item: Equipment;
+  item: ChecklistItem;
   positions: SharedValue<Positions>;
   count: number;
   enabled: boolean;
   onReorder: () => void;
-  render: (item: Equipment, drag: PanGesture) => ReactNode;
+  render: (item: ChecklistItem, drag: PanGesture) => ReactNode;
 };
 
 function DraggableRow({ item, positions, count, enabled, onReorder, render }: RowProps) {
@@ -98,10 +98,10 @@ function DraggableRow({ item, positions, count, enabled, onReorder, render }: Ro
 }
 
 type Props = {
-  items: Equipment[];
+  items: ChecklistItem[];
   enabled: boolean;
-  onReorder: (ordered: Equipment[]) => void;
-  renderItem: (item: Equipment, drag: PanGesture) => ReactNode;
+  onReorder: (ordered: ChecklistItem[]) => void;
+  renderItem: (item: ChecklistItem, drag: PanGesture) => ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
   ListHeaderComponent?: ReactNode;
@@ -115,7 +115,7 @@ type Props = {
  * release. Dragging is only enabled by the caller in the unfiltered view so the
  * persisted order always covers the whole list.
  */
-export function DraggableEquipmentList({
+export function DraggableChecklistList({
   items,
   enabled,
   onReorder,

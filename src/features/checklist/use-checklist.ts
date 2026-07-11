@@ -2,20 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/auth/auth-context';
 import i18n from '@/i18n';
-import { compareEquipment, type Equipment, type EquipmentStatus } from './types';
+import { compareChecklistItem, type ChecklistItem, type ChecklistItemStatus } from './types';
 
-/**
- * Loads and mutates the user's equipment against the JSON API. Updates are
- * applied optimistically; on failure the list is reloaded from the server.
- */
-export function useEquipment() {
+export function useChecklist() {
   const { authedFetch } = useAuth();
-  const [items, setItems] = useState<Equipment[]>([]);
+  const [items, setItems] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const sorted = useCallback(
-    (list: Equipment[]) => [...list].sort(compareEquipment),
+    (list: ChecklistItem[]) => [...list].sort(compareChecklistItem),
     [],
   );
 
@@ -23,7 +19,7 @@ export function useEquipment() {
     setLoading(true);
     setError(false);
     try {
-      const data = await authedFetch<Equipment[]>('/api/equipment');
+      const data = await authedFetch<ChecklistItem[]>('/api/checklist');
       setItems(sorted(data));
     } catch {
       setError(true);
@@ -38,7 +34,7 @@ export function useEquipment() {
 
   const create = useCallback(
     async (name: string) => {
-      const row = await authedFetch<Equipment>('/api/equipment', {
+      const row = await authedFetch<ChecklistItem>('/api/checklist', {
         method: 'POST',
         body: JSON.stringify({ name }),
       });
@@ -49,7 +45,7 @@ export function useEquipment() {
 
   const update = useCallback(
     async (id: number, name: string) => {
-      const row = await authedFetch<Equipment>(`/api/equipment/${id}`, {
+      const row = await authedFetch<ChecklistItem>(`/api/checklist/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ name }),
       });
@@ -59,7 +55,7 @@ export function useEquipment() {
   );
 
   const generate = useCallback(async () => {
-    const rows = await authedFetch<Equipment[]>('/api/equipment/generate', {
+    const rows = await authedFetch<ChecklistItem[]>('/api/checklist/generate', {
       method: 'POST',
       body: JSON.stringify({ locale: i18n.language }),
     });
@@ -67,12 +63,12 @@ export function useEquipment() {
   }, [authedFetch, sorted]);
 
   const setStatus = useCallback(
-    async (ids: number[], status: EquipmentStatus) => {
+    async (ids: number[], status: ChecklistItemStatus) => {
       setItems((prev) =>
         sorted(prev.map((e) => (ids.includes(e.id) ? { ...e, status } : e))),
       );
       try {
-        await authedFetch('/api/equipment/status', {
+        await authedFetch('/api/checklist/status', {
           method: 'POST',
           body: JSON.stringify({ ids, status }),
         });
@@ -88,8 +84,8 @@ export function useEquipment() {
     async (ids: number[]) => {
       const path =
         ids.length === 1
-          ? `/api/equipment/${ids[0]}`
-          : '/api/equipment/bulk-delete';
+          ? `/api/checklist/${ids[0]}`
+          : '/api/checklist/bulk-delete';
       const init: RequestInit =
         ids.length === 1
           ? { method: 'DELETE' }
@@ -105,13 +101,12 @@ export function useEquipment() {
     [authedFetch, load],
   );
 
-  /** Persist a fully reordered list (e.g. after a drag) and reindex `ordre`. */
   const reorder = useCallback(
-    async (ordered: Equipment[]) => {
+    async (ordered: ChecklistItem[]) => {
       const reindexed = ordered.map((e, index) => ({ ...e, ordre: index }));
       setItems(reindexed);
       try {
-        await authedFetch('/api/equipment/reorder', {
+        await authedFetch('/api/checklist/reorder', {
           method: 'POST',
           body: JSON.stringify({ ids: reindexed.map((e) => e.id) }),
         });

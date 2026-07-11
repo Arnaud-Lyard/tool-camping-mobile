@@ -12,7 +12,7 @@ canonical English terms consistent across the app, i18n keys, and backend routes
 
 | Domain | Canonical code term (feature dir, route/tab key, i18n key) |
 | --- | --- |
-| Equipment | `equipment` |
+| Checklist | `checklist` |
 | Tools | `tools` — sub-tools: `compass`, `spiritLevel`, `weather`, `altimeter` |
 | Maintenance | `maintenance` |
 | Settings | `settings` |
@@ -40,10 +40,10 @@ Expo Router shell + **react-native-paper** UI. The whole app is gated behind log
   a Paper `BottomNavigation` with 4 tabs (keys `equipment`, `tools`, `maintenance`, `settings`;
   labels come from i18n). Tabs are scenes (`BottomNavigation.SceneMap`), not Expo Router routes.
   Screens live in `src/features/*`.
-  - **Equipment** — full parity with the Symfony web app: create (new item on top), preset
+  - **Checklist** — full parity with the Symfony web app: create (new item on top), preset
     generation, per-item status toggle, bulk status / bulk delete, move up/down reorder,
-    client-side status filter with counts, edit & delete. Data layer: `use-equipment.ts`
-    (optimistic, reloads on error) + `types.ts`; API under `/api/equipment*`.
+    client-side status filter with counts, edit & delete. Data layer: `use-checklist.ts`
+    (optimistic, reloads on error) + `types.ts`; API under `/api/checklist*`.
   - **Tools** — groups four in-screen tools (`useState`, no router). Two are sensor-based:
     **Level** (two-axis spirit level, `expo-sensors` `Accelerometer` + `expo-haptics`) and
     **Compass** (magnetic heading dial, `expo-sensors` `Magnetometer`, no permission). Two are
@@ -66,13 +66,13 @@ Stateless JSON API under `^/api` (LexikJWT; refresh tokens optional — see belo
 - Public auth (`AuthApiController`): `POST /api/register` (creates user + sends verification email),
   `POST /api/forgot-password` (sends reset email, always 200). Email verification + the reset form
   are completed via the signed links emailed to the user (handled by the web app).
-- Equipment: `GET /api/equipment`, `POST /api/equipment` (create), `POST /api/equipment/generate`,
-  `POST /api/equipment/reorder`, `POST /api/equipment/status`, `POST /api/equipment/bulk-delete`,
-  `PATCH /api/equipment/{id}`, `DELETE /api/equipment/{id}`
+- Checklist: `GET /api/checklist`, `POST /api/checklist` (create), `POST /api/checklist/generate`,
+  `POST /api/checklist/reorder`, `POST /api/checklist/status`, `POST /api/checklist/bulk-delete`,
+  `PATCH /api/checklist/{id}`, `DELETE /api/checklist/{id}`
 - Battery: `GET /api/battery`, `PUT /api/battery`
 
 These mirror the web `/user/*` controllers but are stateless (JWT, JSON bodies, no CSRF). Preset
-lists are shared via `App\Domain\Equipment\EquipmentPresets`. The web form_login firewall is untouched.
+lists are shared via `App\Domain\Checklist\ChecklistPresets`. The web form_login firewall is untouched.
 
 Refresh tokens are **not** enabled (the `refresh_jwt` firewall requires
 `markitosgv/jwt-refresh-token-bundle`). The client already tolerates a `{ token }`-only login; on a

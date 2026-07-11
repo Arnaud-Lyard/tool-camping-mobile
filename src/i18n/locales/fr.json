@@ -1,7 +1,7 @@
 {
   "tabs": {
     "weather": "Météo",
-    "equipment": "Équipements",
+    "checklist": "Checklist",
     "tools": "Outils",
     "settings": "Paramètres"
   },
@@ -11,8 +11,9 @@
     "locationDenied": "Autorisez la localisation pour afficher la météo et la carte.",
     "weatherLoading": "Récupération de la météo…",
     "weatherError": "Impossible de récupérer la météo (réseau requis).",
-    "forecast": "Prévisions 5 jours",
+    "forecast": "Prévisions sur 5 jours",
     "today": "Aujourd'hui",
+    "ensoleillement": "Ensoleillement",
     "source": "Source : Open-Meteo · OpenStreetMap",
     "wmo_clear": "Ensoleillé",
     "wmo_mainly_clear": "Principalement dégagé",
@@ -29,7 +30,9 @@
   },
   "login": {
     "title": "Connexion",
+    "welcomeBack": "Connectez-vous à votre compte",
     "email": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.fr",
     "password": "Mot de passe",
     "submit": "Se connecter",
     "error": "E-mail ou mot de passe invalide",
@@ -40,6 +43,7 @@
   },
   "register": {
     "title": "Inscription",
+    "heading": "Créez votre compte",
     "email": "Adresse e-mail",
     "password": "Mot de passe",
     "confirmPassword": "Confirmez le mot de passe",
@@ -66,8 +70,8 @@
     "success": "Si un compte existe pour cette adresse, un e-mail de réinitialisation a été envoyé.",
     "network": "Impossible de joindre le serveur"
   },
-  "equipment": {
-    "title": "Équipements",
+  "checklist": {
+    "title": "Checklist",
     "create": "Créer",
     "generate": "Générer une liste",
     "selectAll": "Tout sélectionner",
@@ -84,8 +88,8 @@
       "markInProgress": "Marquer comme en cours"
     },
     "modal": {
-      "createTitle": "Nouvel équipement",
-      "editTitle": "Modifier l'équipement",
+      "createTitle": "Nouvel élément",
+      "editTitle": "Modifier l'élément",
       "nameLabel": "Nom",
       "namePlaceholder": "Ex. : Tente 4 places",
       "save": "Enregistrer",
@@ -99,26 +103,26 @@
       "markAllComplete": "Marquer la sélection terminée"
     },
     "confirm": {
-      "deleteTitle": "Supprimer cet équipement ?",
+      "deleteTitle": "Supprimer cet élément ?",
       "deleteText": "Cette action est irréversible.",
-      "deleteBulkTitle": "Supprimer les équipements sélectionnés ?",
+      "deleteBulkTitle": "Supprimer les éléments sélectionnés ?",
       "confirm": "Oui",
       "cancel": "Annuler"
     },
     "toast": {
       "orderUpdated": "Ordre mis à jour",
-      "deleted": "Équipement supprimé",
-      "deletedBulk": "Équipements supprimés",
+      "deleted": "Élément supprimé",
+      "deletedBulk": "Éléments supprimés",
       "statusChanged": "Statut mis à jour",
-      "created": "Équipement créé",
-      "updated": "Équipement mis à jour",
+      "created": "Élément créé",
+      "updated": "Élément mis à jour",
       "generated": "Liste générée",
       "error": "Une erreur est survenue"
     },
     "empty": {
-      "title": "Aucun équipement",
-      "text": "Commencez par créer un équipement.",
-      "cta": "Nouvel équipement"
+      "title": "Aucun élément",
+      "text": "Commencez par créer votre premier élément.",
+      "cta": "Nouvel élément"
     }
   },
   "tools": {
@@ -175,7 +179,7 @@
     "title": "Rappel de batterie",
     "description": "Recevez un rappel par e-mail pour penser à recharger la batterie de votre caravane.",
     "activeLabel": "Activer les rappels",
-    "activeHelp": "Désactivé par défaut. Une fois activé, vous recevrez un e-mail selon la fréquence choisie.",
+    "activeHelp": "Désactivé par défaut. Une fois activé, vous recevrez un e-mail selon la fréquence choisie. Le compteur démarre à la date d'enregistrement.",
     "frequencyLabel": "Fréquence",
     "frequencyUnit": "jour(s)",
     "frequencyHelp": "Nombre de jours entre chaque rappel.",

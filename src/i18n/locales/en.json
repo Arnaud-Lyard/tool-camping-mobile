@@ -1,7 +1,7 @@
 {
   "tabs": {
     "weather": "Weather",
-    "equipment": "Equipment",
+    "checklist": "Checklist",
     "tools": "Tools",
     "settings": "Settings"
   },
@@ -13,6 +13,7 @@
     "weatherError": "Couldn't fetch weather (network required).",
     "forecast": "5-day forecast",
     "today": "Today",
+    "ensoleillement": "Sunshine",
     "source": "Source: Open-Meteo · OpenStreetMap",
     "wmo_clear": "Clear sky",
     "wmo_mainly_clear": "Mainly clear",
@@ -29,7 +30,9 @@
   },
   "login": {
     "title": "Sign in",
+    "welcomeBack": "Sign in to your account",
     "email": "Email address",
+    "emailPlaceholder": "you@example.com",
     "password": "Password",
     "submit": "Sign in",
     "error": "Invalid email or password",
@@ -40,6 +43,7 @@
   },
   "register": {
     "title": "Sign up",
+    "heading": "Create your account",
     "email": "Email address",
     "password": "Password",
     "confirmPassword": "Confirm password",
@@ -66,8 +70,8 @@
     "success": "If an account exists for this address, a reset email has been sent.",
     "network": "Unable to reach the server"
   },
-  "equipment": {
-    "title": "Equipment",
+  "checklist": {
+    "title": "Checklist",
     "create": "Create",
     "generate": "Generate a list",
     "selectAll": "Select all",
@@ -84,8 +88,8 @@
       "markInProgress": "Mark as in progress"
     },
     "modal": {
-      "createTitle": "New equipment",
-      "editTitle": "Edit equipment",
+      "createTitle": "New item",
+      "editTitle": "Edit item",
       "nameLabel": "Name",
       "namePlaceholder": "e.g. 4-person tent",
       "save": "Save",
@@ -99,26 +103,26 @@
       "markAllComplete": "Mark selection as complete"
     },
     "confirm": {
-      "deleteTitle": "Delete this equipment?",
+      "deleteTitle": "Delete this item?",
       "deleteText": "This action cannot be undone.",
-      "deleteBulkTitle": "Delete the selected equipment?",
+      "deleteBulkTitle": "Delete the selected items?",
       "confirm": "Yes",
       "cancel": "Cancel"
     },
     "toast": {
       "orderUpdated": "Order updated",
-      "deleted": "Equipment deleted",
-      "deletedBulk": "Equipment deleted",
+      "deleted": "Item deleted",
+      "deletedBulk": "Items deleted",
       "statusChanged": "Status updated",
-      "created": "Equipment created",
-      "updated": "Equipment updated",
+      "created": "Item created",
+      "updated": "Item updated",
       "generated": "List generated",
       "error": "Something went wrong"
     },
     "empty": {
-      "title": "No equipment",
-      "text": "Get started by creating an equipment item.",
-      "cta": "New equipment"
+      "title": "No items",
+      "text": "Get started by creating your first item.",
+      "cta": "New item"
     }
   },
   "tools": {
@@ -175,7 +179,7 @@
     "title": "Battery reminder",
     "description": "Get an email reminder to recharge your caravan battery.",
     "activeLabel": "Enable reminders",
-    "activeHelp": "Disabled by default. Once enabled, you'll receive an email at the chosen frequency.",
+    "activeHelp": "Disabled by default. Once enabled, you'll receive an email at the chosen frequency. The countdown starts from the date you save.",
     "frequencyLabel": "Frequency",
     "frequencyUnit": "day(s)",
     "frequencyHelp": "Number of days between each reminder.",

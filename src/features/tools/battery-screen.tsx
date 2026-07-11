@@ -56,7 +56,7 @@ export default function BatteryScreen() {
       });
       setSnack(t("battery.saved"));
     } catch {
-      setSnack(t("equipment.toast.error"));
+      setSnack(t("battery.loadError"));
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
@@ -14,16 +14,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
 import {
-  degreesToCompass,
   fetchWeather,
   weatherEmoji,
   weatherI18nKey,
+  type HourlyEntry,
   type WeatherData,
 } from "@/features/tools/open-meteo";
-import { getMoonInfo, getSunTimes } from "@/features/tools/sun-moon";
+import { getSunTimes } from "@/features/tools/sun-moon";
 import { useLocation } from "@/features/tools/use-location";
 
-const MOON_EMOJI = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
 const TREND_THRESHOLD = 0.5;
 const MAP_HEIGHT = 230;
 
@@ -63,6 +62,20 @@ function buildMapHtml(lat: number, lon: number): string {
 const isValid = (d: Date | undefined): d is Date =>
   d instanceof Date && !Number.isNaN(d.getTime());
 
+async function reverseGeocode(lat: number, lon: number, lang: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`,
+      { headers: { "Accept-Language": lang } }
+    );
+    const data = await res.json();
+    const a = data?.address;
+    return a?.town ?? a?.village ?? a?.municipality ?? a?.city ?? a?.county ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function WeatherHomeScreen() {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
@@ -70,7 +83,9 @@ export default function WeatherHomeScreen() {
 
   const [data, setData] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState(false);
+  const [locationName, setLocationName] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const hourlyScrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (!coords) return;
@@ -84,42 +99,39 @@ export default function WeatherHomeScreen() {
   }, [coords]);
 
   useEffect(() => {
+    if (!coords) return;
+    let mounted = true;
+    reverseGeocode(coords.lat, coords.lon, i18n.language)
+      .then((name) => { if (mounted) setLocationName(name); });
+    return () => { mounted = false; };
+  }, [coords, i18n.language]);
+
+  useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
+
+  // Scroll hourly strip to centre the current hour once data arrives
+  useEffect(() => {
+    if (!data?.hourly?.length) return;
+    const idx = data.hourly.findIndex((h) => h.isCurrent);
+    if (idx <= 0) return;
+    setTimeout(() => {
+      hourlyScrollRef.current?.scrollTo({ x: Math.max(0, idx * 64 - 100), animated: false });
+    }, 80);
+  }, [data]);
 
   const formatTime = (d: Date | undefined) =>
     isValid(d)
       ? d.toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" })
       : "—";
 
-  const formatDuration = (ms: number) => {
-    const total = Math.max(0, Math.round(ms / 60_000));
-    const h = Math.floor(total / 60);
-    const m = total % 60;
-    return `${h} h ${String(m).padStart(2, "0")}`;
-  };
-
-  const formatDay = (iso: string, idx: number) => {
-    if (idx === 0) return t("home.today");
-    return new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
+  const fmtShortDay = (iso: string) => {
+    const s = new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, { weekday: "short" });
+    return s.charAt(0).toUpperCase() + s.slice(1).replace(/\.$/, "");
   };
 
   const sun = coords ? getSunTimes(now, coords.lat, coords.lon) : null;
-  const moon = getMoonInfo(now);
-
-  const sunsetCountdown =
-    sun && isValid(sun.sunset) && sun.sunset.getTime() > now.getTime()
-      ? formatDuration(sun.sunset.getTime() - now.getTime())
-      : null;
-  const dayLength =
-    sun && isValid(sun.sunrise) && isValid(sun.sunset)
-      ? formatDuration(sun.sunset.getTime() - sun.sunrise.getTime())
-      : "—";
 
   const currentDate = now.toLocaleDateString(i18n.language, {
     weekday: "long",
@@ -127,12 +139,15 @@ export default function WeatherHomeScreen() {
     month: "long",
   });
 
-  const trendView =
+  const trendColor =
     data && data.trend > TREND_THRESHOLD
-      ? { icon: "▲", label: t("tools.barometerTrendRising"), color: theme.colors.primary }
+      ? theme.colors.primary
       : data && data.trend < -TREND_THRESHOLD
-        ? { icon: "▼", label: t("tools.barometerTrendFalling"), color: theme.colors.error }
-        : { icon: "＝", label: t("tools.barometerTrendStable"), color: theme.colors.onSurfaceVariant };
+        ? theme.colors.error
+        : theme.colors.onSurfaceVariant;
+
+  const trendIcon =
+    data && data.trend > TREND_THRESHOLD ? "▲" : data && data.trend < -TREND_THRESHOLD ? "▼" : null;
 
   return (
     <SafeAreaView style={styles.root} edges={[]}>
@@ -144,7 +159,7 @@ export default function WeatherHomeScreen() {
         />
       </Appbar.Header>
 
-      {/* Map — rendered outside ScrollView to avoid gesture conflicts */}
+      {/* Map */}
       <View style={styles.mapContainer}>
         {locationStatus === "loading" ? (
           <View style={styles.mapPlaceholder}>
@@ -178,41 +193,30 @@ export default function WeatherHomeScreen() {
         ) : data ? (
           <Card style={styles.card} mode="elevated">
             <Card.Content style={styles.currentContent}>
-              {/* Temperature + weather */}
-              <View style={styles.currentTop}>
-                <Text style={styles.bigEmoji}>
-                  {weatherEmoji(data.current.weathercode)}
-                </Text>
-                <View style={styles.currentRight}>
+              <Text variant="bodySmall" style={styles.locationHeader}>
+                {t(`home.${weatherI18nKey(data.current.weathercode)}`)}
+                {locationName ? ` · ${locationName}` : ""}
+              </Text>
+              <View style={styles.currentRow}>
+                <View style={styles.currentLeft}>
+                  <Text style={styles.bigEmoji}>{weatherEmoji(data.current.weathercode)}</Text>
                   <Text variant="displaySmall" style={styles.temperature}>
                     {Math.round(data.current.temperature)}°C
                   </Text>
-                  <Text variant="bodyLarge" style={styles.weatherDesc}>
-                    {t(`home.${weatherI18nKey(data.current.weathercode)}`)}
-                  </Text>
                 </View>
-              </View>
-
-              <Divider style={styles.inlineDivider} />
-
-              {/* Stats row */}
-              <View style={styles.statsRow}>
-                <StatItem
-                  icon="weather-windy"
-                  value={`${degreesToCompass(data.current.winddirection, i18n.language)} ${Math.round(data.current.windspeed)} km/h`}
-                />
-                <StatItem
-                  icon="gauge"
-                  value={`${data.pressure.toFixed(0)} hPa`}
-                  badge={trendView.icon}
-                  badgeColor={trendView.color}
-                />
-                {coords?.altitude != null ? (
-                  <StatItem
-                    icon="terrain"
-                    value={`${Math.round(coords.altitude)} m`}
-                  />
-                ) : null}
+                <View style={styles.statsCol}>
+                  <View style={styles.statItem}>
+                    <Icon source="weather-windy" size={16} color={theme.colors.onSurfaceVariant} />
+                    <Text variant="bodyMedium">{Math.round(data.current.windspeed)} km/h</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Icon source="gauge" size={16} color={theme.colors.onSurfaceVariant} />
+                    <Text variant="bodyMedium">{data.pressure.toFixed(0)} hPa</Text>
+                    {trendIcon ? (
+                      <Text variant="labelSmall" style={{ color: trendColor }}>{trendIcon}</Text>
+                    ) : null}
+                  </View>
+                </View>
               </View>
             </Card.Content>
           </Card>
@@ -233,6 +237,50 @@ export default function WeatherHomeScreen() {
           </Card>
         ) : null}
 
+        {/* Hourly strip */}
+        {data?.hourly && data.hourly.length > 0 ? (
+          <Card style={styles.card} mode="elevated">
+            <Card.Title title={t("home.today")} titleVariant="labelLarge" />
+            <ScrollView
+              ref={hourlyScrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.hourlyScroll}
+            >
+              {data.hourly.map((h: HourlyEntry) => (
+                <View
+                  key={h.time}
+                  style={[
+                    styles.hourlyItem,
+                    h.isCurrent && styles.hourlyItemCurrent,
+                    h.isPast && styles.hourlyItemPast,
+                  ]}
+                >
+                  <Text
+                    variant="labelSmall"
+                    style={h.isCurrent ? styles.hourlyLabelCurrent : styles.hourlyLabel}
+                  >
+                    {h.isCurrent ? (i18n.language === "fr" ? "Maint." : "Now") : h.time}
+                  </Text>
+                  <Text style={styles.hourlyEmoji}>{weatherEmoji(h.weathercode)}</Text>
+                  <Text
+                    variant="bodySmall"
+                    style={[styles.hourlyTemp, h.isCurrent && styles.hourlyTempCurrent]}
+                  >
+                    {Math.round(h.temperature)}°
+                  </Text>
+                  <Text
+                    variant="labelSmall"
+                    style={h.precipitation > 20 ? styles.hourlyRainActive : styles.hourlyRainMuted}
+                  >
+                    {h.precipitation}%
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          </Card>
+        ) : null}
+
         {/* 5-day forecast */}
         {data ? (
           <Card style={styles.card} mode="elevated">
@@ -243,23 +291,16 @@ export default function WeatherHomeScreen() {
                   {idx > 0 ? <Divider style={styles.forecastDivider} /> : null}
                   <View style={styles.forecastRow}>
                     <Text variant="bodyLarge" style={styles.forecastDay}>
-                      {formatDay(day.date, idx)}
+                      {idx === 0 ? t("home.today") : fmtShortDay(day.date)}
                     </Text>
-                    <Text style={styles.forecastEmoji}>
-                      {weatherEmoji(day.weathercode)}
-                    </Text>
-                    <Text variant="bodyLarge" style={styles.forecastTemp}>
-                      {Math.round(day.tempMin)}° / {Math.round(day.tempMax)}°
-                    </Text>
-                    <View style={styles.precipCell}>
-                      {day.precipitation > 0 ? (
-                        <View style={styles.precipRow}>
-                          <Icon source="water-outline" size={14} color={theme.colors.primary} />
-                          <Text variant="bodySmall" style={{ color: theme.colors.primary }}>
-                            {day.precipitation.toFixed(0)} mm
-                          </Text>
-                        </View>
-                      ) : null}
+                    <Text style={styles.forecastEmoji}>{weatherEmoji(day.weathercode)}</Text>
+                    <View style={styles.forecastTempBox}>
+                      <Text variant="bodyMedium" style={styles.tempMax}>
+                        {Math.round(day.tempMax)}°
+                      </Text>
+                      <Text variant="bodyMedium" style={styles.tempMin}>
+                        {Math.round(day.tempMin)}°
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -268,53 +309,34 @@ export default function WeatherHomeScreen() {
           </Card>
         ) : null}
 
-        {/* Sun */}
+        {/* Ensoleillement */}
         {sun ? (
-          <Card style={styles.card} mode="elevated">
-            <Card.Title
-              title={t("tools.weatherSun")}
-              titleVariant="titleMedium"
-              left={(p) => <Icon source="white-balance-sunny" size={p.size} color={theme.colors.secondary} />}
-            />
-            <Card.Content style={styles.sunContent}>
-              {sunsetCountdown ? (
-                <Text variant="bodyMedium" style={{ color: theme.colors.secondary, marginBottom: 4 }}>
-                  {t("tools.sunMoonSunsetIn", { time: sunsetCountdown })}
-                </Text>
-              ) : null}
-              <SunRow label={t("tools.sunMoonSunrise")} value={formatTime(sun.sunrise)} icon="weather-sunset-up" />
-              <SunRow label={t("tools.sunMoonSolarNoon")} value={formatTime(sun.solarNoon)} icon="weather-sunny" />
-              <SunRow label={t("tools.sunMoonGoldenHour")} value={formatTime(sun.goldenHour)} icon="weather-sunset" />
-              <SunRow label={t("tools.sunMoonSunset")} value={formatTime(sun.sunset)} icon="weather-sunset-down" />
-              <SunRow label={t("tools.sunMoonDayLength")} value={dayLength} icon="clock-outline" />
-            </Card.Content>
-          </Card>
-        ) : null}
-
-        {/* Moon */}
-        <Card style={styles.card} mode="elevated">
-          <Card.Title
-            title={t("tools.sunMoonMoon")}
-            titleVariant="titleMedium"
-            left={(p) => <Text style={{ fontSize: p.size }}>{MOON_EMOJI[moon.phaseIndex]}</Text>}
-          />
-          <Card.Content>
-            <Text variant="titleMedium">{t(`tools.sunMoonPhase${moon.phaseIndex}`)}</Text>
-            <Text variant="bodyMedium" style={styles.muted}>
-              {t("tools.sunMoonIllumination", { percent: moon.illumination })}
+          <View style={styles.sunSection}>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              {t("home.ensoleillement")}
             </Text>
-            {moon.nextFullMoon ? (
-              <Text variant="bodySmall" style={[styles.muted, { marginTop: 4 }]}>
-                {t("tools.sunMoonNextFullMoon")} :{" "}
-                {moon.nextFullMoon.toLocaleDateString(i18n.language, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </Text>
-            ) : null}
-          </Card.Content>
-        </Card>
+            <View style={styles.sunCards}>
+              <View style={styles.sunCard}>
+                <Icon source="weather-sunset-up" size={28} color="#f59e0b" />
+                <Text variant="titleLarge" style={styles.sunTime}>
+                  {formatTime(sun.sunrise)}
+                </Text>
+                <Text variant="bodySmall" style={styles.sunLabel}>
+                  {t("tools.sunMoonSunrise")}
+                </Text>
+              </View>
+              <View style={styles.sunCard}>
+                <Icon source="weather-sunset-down" size={28} color="#f59e0b" />
+                <Text variant="titleLarge" style={styles.sunTime}>
+                  {formatTime(sun.sunset)}
+                </Text>
+                <Text variant="bodySmall" style={styles.sunLabel}>
+                  {t("tools.sunMoonSunset")}
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         <Text variant="labelSmall" style={styles.source}>
           {t("home.source")}
@@ -324,79 +346,66 @@ export default function WeatherHomeScreen() {
   );
 }
 
-function StatItem({
-  icon,
-  value,
-  badge,
-  badgeColor,
-}: {
-  icon: string;
-  value: string;
-  badge?: string;
-  badgeColor?: string;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={styles.statItem}>
-      <Icon source={icon} size={18} color={theme.colors.onSurfaceVariant} />
-      <Text variant="bodyMedium">{value}</Text>
-      {badge ? (
-        <Text variant="labelSmall" style={{ color: badgeColor }}>
-          {badge}
-        </Text>
-      ) : null}
-    </View>
-  );
-}
-
-function SunRow({ label, value, icon }: { label: string; value: string; icon: string }) {
-  const theme = useTheme();
-  return (
-    <View style={styles.sunRow}>
-      <Icon source={icon} size={16} color={theme.colors.onSurfaceVariant} />
-      <Text variant="bodyMedium" style={styles.sunLabel}>{label}</Text>
-      <Text variant="bodyMedium">{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   root: { flex: 1 },
   appTitle: { fontWeight: "700" },
-  mapContainer: {
-    height: MAP_HEIGHT,
-    backgroundColor: "#e8e8e8",
-  },
+  mapContainer: { height: MAP_HEIGHT, backgroundColor: "#e8e8e8" },
   map: { flex: 1 },
-  mapPlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
+  mapPlaceholder: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   scroll: { padding: 12, gap: 12, paddingBottom: 24 },
   card: { borderRadius: 16 },
-  currentContent: { gap: 12 },
-  currentTop: { flexDirection: "row", alignItems: "center", gap: 16 },
-  bigEmoji: { fontSize: 56 },
-  currentRight: { gap: 2 },
-  temperature: { fontWeight: "700", lineHeight: 48 },
-  weatherDesc: { opacity: 0.8 },
-  inlineDivider: { marginVertical: 4 },
-  statsRow: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  statItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  currentContent: { gap: 8 },
+  locationHeader: { opacity: 0.6 },
+  currentRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  currentLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  bigEmoji: { fontSize: 48 },
+  temperature: { fontWeight: "700" },
+  statsCol: { gap: 6, alignItems: "flex-end" },
+  statItem: { flexDirection: "row", alignItems: "center", gap: 4 },
   loadingRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   forecastContent: { gap: 0 },
   forecastDivider: { marginVertical: 2, opacity: 0.4 },
-  forecastRow: { flexDirection: "row", alignItems: "center", paddingVertical: 6, gap: 8 },
+  forecastRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, gap: 8 },
   forecastDay: { flex: 1 },
   forecastEmoji: { fontSize: 22, width: 32, textAlign: "center" },
-  forecastTemp: { minWidth: 90, textAlign: "right" },
-  precipCell: { width: 60, alignItems: "flex-end" },
-  precipRow: { flexDirection: "row", alignItems: "center", gap: 2 },
-  sunContent: { gap: 6 },
-  sunRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  sunLabel: { flex: 1, opacity: 0.7 },
+  forecastTempBox: { flexDirection: "row", gap: 4, minWidth: 70, justifyContent: "flex-end" },
+  tempMax: { fontWeight: "600" },
+  tempMin: { opacity: 0.5 },
+  sunSection: { gap: 10 },
+  sectionTitle: { fontWeight: "700" },
+  sunCards: { flexDirection: "row", gap: 12 },
+  sunCard: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#fef3c7",
+    borderRadius: 16,
+    padding: 16,
+    gap: 4,
+  },
+  sunTime: { fontWeight: "700", color: "#92400e" },
+  sunLabel: { color: "#b45309", textAlign: "center" },
   muted: { opacity: 0.7 },
   source: { opacity: 0.45, textAlign: "center", marginTop: 4 },
+  hourlyScroll: { paddingHorizontal: 12, paddingBottom: 12, gap: 4, flexDirection: "row" },
+  hourlyItem: {
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 4,
+    minWidth: 56,
+  },
+  hourlyItemCurrent: {
+    backgroundColor: "rgba(79,70,229,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(79,70,229,0.25)",
+  },
+  hourlyItemPast: { opacity: 0.4 },
+  hourlyLabel: { opacity: 0.6 },
+  hourlyLabelCurrent: { color: "#4f46e5", fontWeight: "700" },
+  hourlyEmoji: { fontSize: 18 },
+  hourlyTemp: { fontWeight: "600" },
+  hourlyTempCurrent: { color: "#4338ca" },
+  hourlyRainActive: { color: "#3b82f6" },
+  hourlyRainMuted: { opacity: 0.3 },
 });

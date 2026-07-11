@@ -22,31 +22,31 @@ import {
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DraggableEquipmentList } from './draggable-equipment-list';
-import type { Equipment, EquipmentStatus } from './types';
-import { useEquipment } from './use-equipment';
+import { DraggableChecklistList } from './draggable-checklist-list';
+import type { ChecklistItem, ChecklistItemStatus } from './types';
+import { useChecklist } from './use-checklist';
 
 type RowProps = {
-  item: Equipment;
+  item: ChecklistItem;
   selected: boolean;
   menuOpen: boolean;
   dragEnabled: boolean;
   dragGesture: PanGesture;
   onToggleSelect: (id: number) => void;
-  onToggleStatus: (item: Equipment) => void;
+  onToggleStatus: (item: ChecklistItem) => void;
   onOpenMenu: (id: number) => void;
   onCloseMenu: () => void;
-  onEdit: (item: Equipment) => void;
+  onEdit: (item: ChecklistItem) => void;
   onDelete: (id: number) => void;
 };
 
 /**
- * A single equipment row. Memoized so a state change on the screen (selecting
+ * A single checklist row. Memoized so a state change on the screen (selecting
  * another row, opening a menu, typing in a dialog) only re-renders the rows
  * whose own `selected` / `menuOpen` actually changed. The heavy `Menu` (a
  * Portal) is mounted only for the open row instead of once per row.
  */
-const EquipmentRow = memo(function EquipmentRow({
+const ChecklistItemRow = memo(function ChecklistItemRow({
   item,
   selected,
   menuOpen,
@@ -74,7 +74,7 @@ const EquipmentRow = memo(function EquipmentRow({
         iconColor={complete ? '#16a34a' : undefined}
         onPress={() => onToggleStatus(item)}
         accessibilityLabel={
-          complete ? t('equipment.actions.markInProgress') : t('equipment.actions.markComplete')
+          complete ? t('checklist.actions.markInProgress') : t('checklist.actions.markComplete')
         }
       />
       <Text style={[styles.name, complete && styles.nameComplete]} numberOfLines={1}>
@@ -84,13 +84,13 @@ const EquipmentRow = memo(function EquipmentRow({
         <Menu visible onDismiss={onCloseMenu} anchor={anchor}>
           <Menu.Item
             onPress={() => onEdit(item)}
-            title={t('equipment.actions.edit')}
+            title={t('checklist.actions.edit')}
             leadingIcon="pencil"
           />
           <Divider />
           <Menu.Item
             onPress={() => onDelete(item.id)}
-            title={t('equipment.actions.delete')}
+            title={t('checklist.actions.delete')}
             leadingIcon="delete"
           />
         </Menu>
@@ -102,7 +102,7 @@ const EquipmentRow = memo(function EquipmentRow({
           <View
             style={styles.handle}
             accessible
-            accessibilityLabel={t('equipment.actions.reorder')}
+            accessibilityLabel={t('checklist.actions.reorder')}
           >
             <Icon source="drag-vertical" size={26} />
           </View>
@@ -112,9 +112,9 @@ const EquipmentRow = memo(function EquipmentRow({
   );
 });
 
-export default function EquipmentScreen() {
+export default function ChecklistScreen() {
   const { t } = useTranslation();
-  const eq = useEquipment();
+  const eq = useChecklist();
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [menuFor, setMenuFor] = useState<number | null>(null);
@@ -173,8 +173,8 @@ export default function EquipmentScreen() {
   );
 
   const toggleStatus = useCallback(
-    async (item: Equipment) => {
-      const next: EquipmentStatus =
+    async (item: ChecklistItem) => {
+      const next: ChecklistItemStatus =
         item.status === 'in_progress' ? 'complete' : 'in_progress';
       try {
         await setStatus([item.id], next);
@@ -188,12 +188,12 @@ export default function EquipmentScreen() {
   const openMenu = useCallback((id: number) => setMenuFor(id), []);
   const closeMenu = useCallback(() => setMenuFor(null), []);
 
-  const editItem = useCallback((item: Equipment) => {
+  const editItem = useCallback((item: ChecklistItem) => {
     setMenuFor(null);
     setDialog({ editId: item.id, name: item.name, error: false });
   }, []);
 
-  const bulkStatus = async (status: EquipmentStatus) => {
+  const bulkStatus = async (status: ChecklistItemStatus) => {
     const ids = [...selected];
     if (!ids.length) return;
     try {
@@ -245,7 +245,7 @@ export default function EquipmentScreen() {
 
   const reorder = eq.reorder;
   const onReorder = useCallback(
-    async (ordered: Equipment[]) => {
+    async (ordered: ChecklistItem[]) => {
       try {
         await reorder(ordered);
       } catch {
@@ -257,8 +257,8 @@ export default function EquipmentScreen() {
 
   // --- Render -------------------------------------------------------------
   const renderRow = useCallback(
-    (item: Equipment, dragGesture: PanGesture) => (
-      <EquipmentRow
+    (item: ChecklistItem, dragGesture: PanGesture) => (
+      <ChecklistItemRow
         item={item}
         selected={selected.has(item.id)}
         menuOpen={menuFor === item.id}
@@ -278,13 +278,13 @@ export default function EquipmentScreen() {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       <Appbar.Header>
-        <Appbar.Content title={t('equipment.title')} />
+        <Appbar.Content title={t('checklist.title')} />
       </Appbar.Header>
 
       {eq.items.length > 0 ? (
         <View style={styles.toolbar}>
           <View style={styles.progressHeader}>
-            <Text variant="labelLarge">{t('equipment.progress.label')}</Text>
+            <Text variant="labelLarge">{t('checklist.progress.label')}</Text>
             <Text variant="labelLarge">
               {progress.complete} / {progress.total}
             </Text>
@@ -296,12 +296,12 @@ export default function EquipmentScreen() {
       {selected.size > 0 ? (
         <Surface style={styles.bulkBar} elevation={2}>
           <Text variant="labelLarge">
-            {selected.size} {t('equipment.bulk.selectedLabel')}
+            {selected.size} {t('checklist.bulk.selectedLabel')}
           </Text>
           <View style={styles.bulkActions}>
-            <IconButton icon="circle-outline" onPress={() => bulkStatus('in_progress')} accessibilityLabel={t('equipment.bulk.markAllInProgress')} />
-            <IconButton icon="check-circle" onPress={() => bulkStatus('complete')} accessibilityLabel={t('equipment.bulk.markAllComplete')} />
-            <IconButton icon="delete" onPress={() => removeIds([...selected])} accessibilityLabel={t('equipment.bulk.delete')} />
+            <IconButton icon="circle-outline" onPress={() => bulkStatus('in_progress')} accessibilityLabel={t('checklist.bulk.markAllInProgress')} />
+            <IconButton icon="check-circle" onPress={() => bulkStatus('complete')} accessibilityLabel={t('checklist.bulk.markAllComplete')} />
+            <IconButton icon="delete" onPress={() => removeIds([...selected])} accessibilityLabel={t('checklist.bulk.delete')} />
           </View>
         </Surface>
       ) : null}
@@ -309,7 +309,7 @@ export default function EquipmentScreen() {
       {eq.loading ? (
         <ActivityIndicator style={styles.center} />
       ) : (
-        <DraggableEquipmentList
+        <DraggableChecklistList
           items={visible}
           enabled={canDrag}
           onReorder={onReorder}
@@ -319,16 +319,16 @@ export default function EquipmentScreen() {
           ListHeaderComponent={
             visible.length > 0 ? (
               <Button compact onPress={toggleSelectAll} style={styles.selectAll}>
-                {allVisibleSelected ? t('equipment.deselectAll') : t('equipment.selectAll')}
+                {allVisibleSelected ? t('checklist.deselectAll') : t('checklist.selectAll')}
               </Button>
             ) : null
           }
           ListEmptyComponent={
             <View style={styles.center}>
               <Text variant="titleMedium">
-                {eq.error ? t('equipment.toast.error') : t('equipment.empty.title')}
+                {eq.error ? t('checklist.toast.error') : t('checklist.empty.title')}
               </Text>
-              {!eq.error ? <Text variant="bodyMedium">{t('equipment.empty.text')}</Text> : null}
+              {!eq.error ? <Text variant="bodyMedium">{t('checklist.empty.text')}</Text> : null}
             </View>
           }
         />
@@ -337,7 +337,7 @@ export default function EquipmentScreen() {
       {eq.items.length === 0 && !eq.loading ? (
         <FAB
           icon="playlist-plus"
-          label={t('equipment.generate')}
+          label={t('checklist.generate')}
           style={styles.fabGenerate}
           onPress={generate}
         />
@@ -346,32 +346,32 @@ export default function EquipmentScreen() {
         icon="plus"
         style={styles.fab}
         onPress={() => setDialog({ editId: null, name: '', error: false })}
-        accessibilityLabel={t('equipment.create')}
+        accessibilityLabel={t('checklist.create')}
       />
 
       {/* Create / edit dialog */}
       <Portal>
         <Dialog visible={dialog !== null} onDismiss={() => setDialog(null)}>
           <Dialog.Title>
-            {t(dialog?.editId == null ? 'equipment.modal.createTitle' : 'equipment.modal.editTitle')}
+            {t(dialog?.editId == null ? 'checklist.modal.createTitle' : 'checklist.modal.editTitle')}
           </Dialog.Title>
           <Dialog.Content>
             <TextInput
               mode="outlined"
-              label={t('equipment.modal.nameLabel')}
-              placeholder={t('equipment.modal.namePlaceholder')}
+              label={t('checklist.modal.nameLabel')}
+              placeholder={t('checklist.modal.namePlaceholder')}
               value={dialog?.name ?? ''}
               maxLength={510}
               autoFocus
               onChangeText={(name) => setDialog((d) => (d ? { ...d, name, error: false } : d))}
             />
             <HelperText type="error" visible={!!dialog?.error}>
-              {t('equipment.modal.nameRequired')}
+              {t('checklist.modal.nameRequired')}
             </HelperText>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDialog(null)}>{t('equipment.modal.cancel')}</Button>
-            <Button onPress={submitDialog}>{t('equipment.modal.save')}</Button>
+            <Button onPress={() => setDialog(null)}>{t('checklist.modal.cancel')}</Button>
+            <Button onPress={submitDialog}>{t('checklist.modal.save')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
