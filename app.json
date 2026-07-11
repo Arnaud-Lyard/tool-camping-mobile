@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "campingnard",
-    "slug": "campingnard",
+    "name": "Campingnard",
+    "slug": "Campingnard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -56,7 +56,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "49f6035f-cc31-435d-a0c4-1a260e761bc3"
+        "projectId": "dd6f00bb-4826-4bec-bfb0-e37510c9eff5"
       }
     }
   }
