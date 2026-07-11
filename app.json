@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Campingnard",
-    "slug": "tool-camping",
+    "name": "campingnard",
+    "slug": "campingnard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "toolcamping",
+    "scheme": "campingnard",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/icon.png"
@@ -15,8 +15,7 @@
         "backgroundColor": "#185d34",
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.arnaud01500.toolcamping"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -48,12 +47,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "9183a11c-fae3-4fdb-a662-4c1d1fbb6d38"
-      }
     }
   }
 }
