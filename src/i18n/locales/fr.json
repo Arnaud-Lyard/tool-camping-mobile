@@ -36,6 +36,7 @@
     "password": "Mot de passe",
     "submit": "Se connecter",
     "error": "E-mail ou mot de passe invalide",
+    "accountNotVerified": "Votre adresse e-mail n'a pas encore été vérifiée. Consultez votre boîte mail.",
     "networkError": "Impossible de joindre le serveur",
     "serverError": "Erreur serveur ({{status}})",
     "forgotPasswordLink": "Mot de passe oublié ?",
@@ -194,6 +195,14 @@
     "french": "Français",
     "english": "English",
     "loggedInAs": "Connecté en tant que {{email}}",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountTitle": "Supprimer mon compte",
+    "deleteAccountText": "Cette action est irréversible. Toutes vos données seront supprimées définitivement. Saisissez votre mot de passe pour confirmer.",
+    "deleteAccountPassword": "Mot de passe",
+    "deleteAccountConfirm": "Supprimer",
+    "deleteAccountCancel": "Annuler",
+    "deleteAccountInvalidPassword": "Mot de passe incorrect",
+    "deleteAccountError": "Une erreur est survenue. Réessayez."
   }
 }

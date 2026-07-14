@@ -20,7 +20,20 @@ export async function login(email: string, password: string): Promise<Tokens> {
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
-    throw new ApiError(res.status, 'login_failed');
+    let code = 'login_failed';
+    try {
+      const body = await res.json();
+      if (
+        typeof body?.message === 'string' &&
+        (body.message.toLowerCase().includes('not verified') ||
+          body.message.toLowerCase().includes('pas encore vérifié'))
+      ) {
+        code = 'account_not_verified';
+      }
+    } catch {
+      // non-JSON body — keep generic code
+    }
+    throw new ApiError(res.status, code);
   }
   return res.json();
 }
@@ -71,6 +84,31 @@ export async function refresh(refreshToken: string): Promise<Tokens> {
     throw new ApiError(res.status, 'refresh_failed');
   }
   return res.json();
+}
+
+/**
+ * DELETE /api/me — deletes the authenticated account after password confirmation.
+ * On success the caller must sign out and clear the local JWT.
+ */
+export async function deleteMe(token: string, password: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/me`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) {
+    let code = 'generic';
+    try {
+      const body = await res.json();
+      if (body?.error) code = String(body.error);
+    } catch {
+      // ignore
+    }
+    throw new ApiError(res.status, code);
+  }
 }
 
 /**

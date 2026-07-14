@@ -33,11 +33,13 @@ export default function LoginScreen() {
       await signIn(email.trim(), password);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(
-          err.status === 401
-            ? t('login.error')
-            : t('login.serverError', { status: err.status }),
-        );
+        if (err.message === 'account_not_verified') {
+          setError(t('login.accountNotVerified'));
+        } else if (err.status === 401) {
+          setError(t('login.error'));
+        } else {
+          setError(t('login.serverError', { status: err.status }));
+        }
       } else {
         setError(t('login.networkError'));
       }

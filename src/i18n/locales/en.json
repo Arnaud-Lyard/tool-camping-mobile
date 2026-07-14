@@ -36,6 +36,7 @@
     "password": "Password",
     "submit": "Sign in",
     "error": "Invalid email or password",
+    "accountNotVerified": "Your email address has not been verified yet. Please check your inbox.",
     "networkError": "Unable to reach the server",
     "serverError": "Server error ({{status}})",
     "forgotPasswordLink": "Forgot password?",
@@ -194,6 +195,14 @@
     "french": "Français",
     "english": "English",
     "loggedInAs": "Signed in as {{email}}",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "deleteAccount": "Delete my account",
+    "deleteAccountTitle": "Delete my account",
+    "deleteAccountText": "This action is irreversible. All your data will be permanently deleted. Enter your password to confirm.",
+    "deleteAccountPassword": "Password",
+    "deleteAccountConfirm": "Delete",
+    "deleteAccountCancel": "Cancel",
+    "deleteAccountInvalidPassword": "Incorrect password",
+    "deleteAccountError": "Something went wrong. Please try again."
   }
 }

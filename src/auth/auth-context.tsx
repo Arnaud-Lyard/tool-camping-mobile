@@ -29,6 +29,8 @@ type AuthContextValue = {
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Deletes the account after password confirmation, then signs out. */
+  deleteAccount: (password: string) => Promise<void>;
   /** Authenticated request that transparently refreshes the JWT on 401. */
   authedFetch: <T>(path: string, init?: RequestInit) => Promise<T>;
 };
@@ -102,6 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [persist]);
 
+  const deleteAccount = useCallback(
+    async (password: string) => {
+      if (!token) throw new api.ApiError(401, 'no_token');
+      await api.deleteMe(token, password);
+      await signOut();
+    },
+    [token, signOut],
+  );
+
   const signIn = useCallback(
     async (email: string, password: string) => {
       const tokens = await api.login(email, password);
@@ -135,8 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, signIn, signOut, authedFetch }),
-    [status, user, signIn, signOut, authedFetch],
+    () => ({ status, user, signIn, signOut, deleteAccount, authedFetch }),
+    [status, user, signIn, signOut, deleteAccount, authedFetch],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
