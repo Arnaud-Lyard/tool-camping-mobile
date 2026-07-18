@@ -18,3 +18,5 @@ const fallback =
 
 // Trim a trailing slash so `${API_BASE_URL}/api/...` never doubles up.
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || fallback;
+
+export const MOBILE_API_KEY = process.env.EXPO_PUBLIC_MOBILE_API_KEY ?? '';

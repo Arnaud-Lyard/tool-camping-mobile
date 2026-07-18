@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@/constants/config';
+import { API_BASE_URL, MOBILE_API_KEY } from '@/constants/config';
+
+const APP_HEADERS = { 'X-Api-Key': MOBILE_API_KEY };
 
 export class ApiError extends Error {
   constructor(
@@ -16,7 +18,7 @@ export type Tokens = { token: string; refresh_token?: string };
 export async function login(email: string, password: string): Promise<Tokens> {
   const res = await fetch(`${API_BASE_URL}/api/login_check`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
@@ -46,7 +48,7 @@ export async function register(
 ): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, locale }),
   });
   if (!res.ok) {
@@ -65,7 +67,7 @@ export async function register(
 export async function forgotPassword(email: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/forgot-password`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
   if (!res.ok) {
@@ -77,7 +79,7 @@ export async function forgotPassword(email: string): Promise<void> {
 export async function refresh(refreshToken: string): Promise<Tokens> {
   const res = await fetch(`${API_BASE_URL}/api/token/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
   if (!res.ok) {
@@ -94,6 +96,7 @@ export async function deleteMe(token: string, password: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/me`, {
     method: 'DELETE',
     headers: {
+      ...APP_HEADERS,
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
@@ -123,6 +126,7 @@ export async function apiFetch<T>(
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
+      ...APP_HEADERS,
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
