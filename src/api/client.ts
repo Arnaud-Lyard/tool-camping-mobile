@@ -1,6 +1,9 @@
-import { API_BASE_URL, MOBILE_API_KEY } from '@/constants/config';
+import { API_BASE_URL, MOBILE_HMAC_SECRET } from '@/constants/config';
+import { signRequest } from '@/utils/hmac';
 
-const APP_HEADERS = { 'X-Api-Key': MOBILE_API_KEY };
+function hmacHeaders(method: string, path: string): Record<string, string> {
+  return signRequest(MOBILE_HMAC_SECRET, method, path);
+}
 
 export class ApiError extends Error {
   constructor(
@@ -16,9 +19,10 @@ export type Tokens = { token: string; refresh_token?: string };
 
 /** POST /api/login_check — exchanges credentials for a JWT + refresh token. */
 export async function login(email: string, password: string): Promise<Tokens> {
-  const res = await fetch(`${API_BASE_URL}/api/login_check`, {
+  const path = '/api/login_check';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...hmacHeaders('POST', path), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
@@ -46,9 +50,10 @@ export async function register(
   password: string,
   locale: string,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/register`, {
+  const path = '/api/register';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...hmacHeaders('POST', path), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, locale }),
   });
   if (!res.ok) {
@@ -65,9 +70,10 @@ export async function register(
 
 /** POST /api/forgot-password — requests a password-reset email (always 200). */
 export async function forgotPassword(email: string): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/forgot-password`, {
+  const path = '/api/forgot-password';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...hmacHeaders('POST', path), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
   if (!res.ok) {
@@ -77,9 +83,10 @@ export async function forgotPassword(email: string): Promise<void> {
 
 /** POST /api/token/refresh — renews the JWT from a refresh token. */
 export async function refresh(refreshToken: string): Promise<Tokens> {
-  const res = await fetch(`${API_BASE_URL}/api/token/refresh`, {
+  const path = '/api/token/refresh';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { ...APP_HEADERS, 'Content-Type': 'application/json' },
+    headers: { ...hmacHeaders('POST', path), 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
   if (!res.ok) {
@@ -93,10 +100,11 @@ export async function refresh(refreshToken: string): Promise<Tokens> {
  * On success the caller must sign out and clear the local JWT.
  */
 export async function deleteMe(token: string, password: string): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/me`, {
+  const path = '/api/me';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'DELETE',
     headers: {
-      ...APP_HEADERS,
+      ...hmacHeaders('DELETE', path),
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
@@ -123,10 +131,11 @@ export async function apiFetch<T>(
   token: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const method = (init.method ?? 'GET').toUpperCase();
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      ...APP_HEADERS,
+      ...hmacHeaders(method, path),
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
